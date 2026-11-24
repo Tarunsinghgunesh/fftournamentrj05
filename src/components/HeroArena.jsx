@@ -12,8 +12,10 @@ import {
   MapPin, 
   Calendar,
   Sparkles,
-  ChevronDown
+  Zap,
+  Radio
 } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { playClick, playHover, playSuccess } from '../utils/audio';
 
 export default function HeroArena() {
@@ -64,22 +66,30 @@ export default function HeroArena() {
       
       {/* High-Impact Cinematic Bermuda Battlefield Background Art */}
       <div className="absolute inset-0 z-0">
-        <img
+        <motion.img
+          initial={{ scale: 1.15, opacity: 0 }}
+          animate={{ scale: 1.05, opacity: 0.28 }}
+          transition={{ duration: 1.5, ease: 'easeOut' }}
           src="/bermuda-battlefield.jpg"
           alt="Free Fire Bermuda Battlefield Arena"
-          className="w-full h-full object-cover object-center opacity-25 filter brightness-75 scale-105 transform hover:scale-100 transition-transform duration-1000"
+          className="w-full h-full object-cover object-center filter brightness-90"
         />
         {/* Radial vignette overlays */}
-        <div className="absolute inset-0 bg-gradient-to-t from-obsidian via-obsidian/85 to-obsidian/60" />
-        <div className="absolute inset-0 bg-radial-gradient from-transparent via-obsidian/70 to-obsidian" />
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[750px] h-[550px] bg-neonOrange/15 blur-[160px] pointer-events-none rounded-full" />
+        <div className="absolute inset-0 bg-gradient-to-t from-obsidian via-obsidian/80 to-obsidian/60" />
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[600px] bg-neonOrange/20 blur-[170px] pointer-events-none rounded-full" />
+        <div className="absolute bottom-10 right-10 w-[500px] h-[500px] bg-neonCyan/15 blur-[160px] pointer-events-none rounded-full" />
       </div>
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full z-10">
         
-        {/* Top Floating Match Day Announcement Pills */}
-        <div className="flex flex-wrap items-center justify-center gap-2.5 sm:gap-3 mb-6">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-surfaceLight/90 border border-neonOrange/50 text-neonOrange text-xs font-semibold tracking-wider font-orbitron shadow-glow-orange/30">
+        {/* Top Badges with Smooth Animation */}
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="flex flex-wrap items-center justify-center gap-2.5 sm:gap-3 mb-6"
+        >
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-surfaceLight/95 border border-neonOrange/60 text-neonOrange text-xs font-semibold tracking-wider font-orbitron shadow-glow-orange animate-pulse-slow">
             <Flame className="w-3.5 h-3.5 fill-neonOrange" />
             <span>SEASON 1 TOURNAMENT • 1ST MATCH</span>
           </div>
@@ -93,24 +103,34 @@ export default function HeroArena() {
             <MapPin className="w-3.5 h-3.5 text-neonGold" />
             <span>BERMUDA (ONLY)</span>
           </div>
-        </div>
+        </motion.div>
 
-        {/* Main Headline with Neon Gradients */}
-        <div className="text-center max-w-4xl mx-auto mb-8">
+        {/* Main Headline */}
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.7, delay: 0.1 }}
+          className="text-center max-w-4xl mx-auto mb-8"
+        >
           <h1 className="font-orbitron font-black text-4xl sm:text-6xl lg:text-7xl tracking-tight text-white uppercase leading-[1.05] drop-shadow-2xl">
-            DROP. <span className="text-transparent bg-clip-text bg-gradient-to-r from-neonOrange via-neonGold to-orange-500">SURVIVE.</span><br />
-            CLAIM THE <span className="text-transparent bg-clip-text bg-gradient-to-r from-neonCyan via-teal-300 to-neonGreen drop-shadow-[0_0_30px_rgba(0,240,255,0.45)]">BOOYAH!</span>
+            DROP. <span className="text-transparent bg-clip-text bg-gradient-to-r from-neonOrange via-neonGold to-orange-500 animate-pulse">SURVIVE.</span><br />
+            CLAIM THE <span className="text-transparent bg-clip-text bg-gradient-to-r from-neonCyan via-teal-300 to-neonGreen drop-shadow-[0_0_35px_rgba(0,240,255,0.6)]">BOOYAH!</span>
           </h1>
           <p className="mt-5 text-slate-300 text-sm sm:text-base max-w-2xl mx-auto font-light leading-relaxed">
             Welcome to the official 1st Match of <strong className="text-white font-medium">RJ05 Esports Season 1</strong>. Exactly 12 Squads (48 Players Max) battling on Bermuda for the ₹600 Booyah Trophy.
           </p>
-        </div>
+        </motion.div>
 
-        {/* Countdown Timer with Neon Border Beam */}
-        <div className="max-w-xl mx-auto mb-10">
-          <div className="glass-panel-glow border-beam rounded-2xl p-4 sm:p-5 text-center relative overflow-hidden">
+        {/* Countdown Timer Strip */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, delay: 0.2 }}
+          className="max-w-xl mx-auto mb-10"
+        >
+          <div className="glass-panel-glow border-beam rounded-2xl p-4 sm:p-5 text-center relative overflow-hidden shadow-2xl">
             <div className="flex items-center justify-center gap-2 text-xs font-semibold text-neonOrange font-orbitron uppercase tracking-widest mb-3">
-              <Clock className="w-4 h-4 text-neonOrange animate-spin" style={{ animationDuration: '10s' }} />
+              <Clock className="w-4 h-4 text-neonOrange animate-spin" style={{ animationDuration: '8s' }} />
               <span>Match Kickoff Countdown (Sunday, 29 Nov 2026)</span>
             </div>
 
@@ -141,13 +161,17 @@ export default function HeroArena() {
               </div>
             </div>
           </div>
-        </div>
+        </motion.div>
 
-        {/* Real Tournament Parameter Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-5xl mx-auto mb-10">
-          
+        {/* Real Tournament Parameter Cards with Hover Effects */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, delay: 0.3 }}
+          className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-5xl mx-auto mb-10"
+        >
           {/* Card 1: 1st Prize */}
-          <div className="glass-panel p-4 rounded-xl border-l-4 border-l-neonGold hover:border-white/20 transition-all">
+          <div className="glass-panel p-4 rounded-xl border-l-4 border-l-neonGold hover:border-white/30 hover:scale-[1.02] transition-all duration-300">
             <div className="flex items-center gap-1.5 text-neonGold mb-1">
               <Trophy className="w-4 h-4" />
               <span className="text-[10px] font-orbitron uppercase font-bold tracking-wider">1st Prize (Booyah)</span>
@@ -159,7 +183,7 @@ export default function HeroArena() {
           </div>
 
           {/* Card 2: Entry Fee */}
-          <div className="glass-panel p-4 rounded-xl border-l-4 border-l-neonOrange hover:border-white/20 transition-all">
+          <div className="glass-panel p-4 rounded-xl border-l-4 border-l-neonOrange hover:border-white/30 hover:scale-[1.02] transition-all duration-300">
             <div className="flex items-center gap-1.5 text-neonOrange mb-1">
               <Target className="w-4 h-4" />
               <span className="text-[10px] font-orbitron uppercase font-bold tracking-wider">Entry Fees</span>
@@ -171,7 +195,7 @@ export default function HeroArena() {
           </div>
 
           {/* Card 3: Total Capacity */}
-          <div className="glass-panel p-4 rounded-xl border-l-4 border-l-neonCyan hover:border-white/20 transition-all">
+          <div className="glass-panel p-4 rounded-xl border-l-4 border-l-neonCyan hover:border-white/30 hover:scale-[1.02] transition-all duration-300">
             <div className="flex items-center gap-1.5 text-neonCyan mb-1">
               <Users className="w-4 h-4" />
               <span className="text-[10px] font-orbitron uppercase font-bold tracking-wider">Total Capacity</span>
@@ -183,7 +207,7 @@ export default function HeroArena() {
           </div>
 
           {/* Card 4: Verified Host FF UID */}
-          <div className="glass-panel p-4 rounded-xl border-l-4 border-l-neonGreen hover:border-white/20 transition-all relative">
+          <div className="glass-panel p-4 rounded-xl border-l-4 border-l-neonGreen hover:border-white/30 hover:scale-[1.02] transition-all duration-300 relative">
             <div className="flex items-center justify-between text-neonGreen mb-1">
               <div className="flex items-center gap-1.5">
                 <Shield className="w-4 h-4" />
@@ -204,11 +228,15 @@ export default function HeroArena() {
             </div>
             <p className="text-[11px] text-slate-400 mt-0.5">IGN: {hostIgn} (Lv. 61)</p>
           </div>
+        </motion.div>
 
-        </div>
-
-        {/* Action Buttons */}
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 max-w-md mx-auto">
+        {/* CTA Buttons */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, delay: 0.4 }}
+          className="flex flex-col sm:flex-row items-center justify-center gap-4 max-w-md mx-auto"
+        >
           <a
             href="#booking"
             onClick={() => playClick()}
@@ -229,7 +257,7 @@ export default function HeroArena() {
             <Users className="w-4 h-4" />
             <span>Live Slots Telemetry</span>
           </a>
-        </div>
+        </motion.div>
 
       </div>
     </section>

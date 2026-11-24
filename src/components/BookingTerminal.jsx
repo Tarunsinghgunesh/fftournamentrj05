@@ -523,16 +523,19 @@ export default function BookingTerminal({ onBookingSuccess }) {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 items-center mb-6">
               
-              {/* Dynamic QR Code */}
+              {/* Dynamic QR Code with Animated Cyber Scanner Beam */}
               <div className="flex flex-col items-center">
-                <div className="p-3 bg-white rounded-2xl shadow-2xl">
+                <div className="relative p-3 bg-white rounded-2xl shadow-2xl overflow-hidden group border border-neonGold/30">
                   <img
                     src={qrCodeUrl}
                     alt="Official Tournament UPI QR"
                     className="w-48 h-48 object-contain rounded-lg"
                   />
+                  {/* Cyber Laser Scanner line */}
+                  <div className="absolute left-0 right-0 h-1 bg-gradient-to-r from-transparent via-neonOrange to-transparent animate-scanline shadow-glow-orange pointer-events-none" />
                 </div>
-                <span className="text-[11px] text-slate-400 mt-2 font-mono">
+                <span className="text-[11px] text-slate-400 mt-2 font-mono flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-neonGreen animate-ping" />
                   PhonePe • Google Pay • Paytm • BHIM
                 </span>
 
