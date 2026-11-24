@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Flame, Shield, Search, Volume2, VolumeX, Menu, X, Trophy, Zap, Calendar } from 'lucide-react';
 import { getMuteState, toggleMute, playClick, playHover } from '../utils/audio';
+import RJ05Logo from './RJ05Logo';
 
 export default function Navbar({ onOpenSearch }) {
   const [isMuted, setIsMuted] = useState(getMuteState());
@@ -55,11 +56,7 @@ export default function Navbar({ onOpenSearch }) {
             onMouseEnter={() => playHover()}
             className="flex items-center gap-3 group cursor-pointer"
           >
-            <div className="relative w-10 h-10 rounded-lg bg-gradient-to-br from-neonOrange to-neonGold p-[2px] shadow-glow-orange group-hover:scale-105 transition-transform">
-              <div className="w-full h-full bg-obsidian rounded-[6px] flex items-center justify-center">
-                <Flame className="w-6 h-6 text-neonOrange group-hover:text-neonGold transition-colors" />
-              </div>
-            </div>
+            <RJ05Logo className="w-11 h-11 group-hover:scale-105 transition-transform" />
             <div className="flex flex-col">
               <span className="font-orbitron font-extrabold text-xl tracking-wider text-white flex items-center gap-1.5">
                 RJ05 <span className="text-neonOrange">ESPORTS</span>

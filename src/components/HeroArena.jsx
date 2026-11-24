@@ -160,6 +160,17 @@ export default function HeroArena() {
                 <span className="block text-[9px] text-slate-400 font-medium uppercase tracking-wider mt-0.5">Seconds</span>
               </div>
             </div>
+
+            {/* Live Timing & Room Announcement Banner */}
+            <div className="mt-4 pt-3 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs">
+              <div className="flex items-center gap-1.5 text-neonGold font-orbitron font-bold text-[11px]">
+                <Radio className="w-3.5 h-3.5 text-neonOrange animate-pulse" />
+                <span>MATCH TIMING BROADCAST:</span>
+              </div>
+              <span className="text-[11px] text-slate-300 text-center sm:text-right">
+                Exact slot timing & custom room ID will be announced live on this portal and dispatched to all players!
+              </span>
+            </div>
           </div>
         </motion.div>
 

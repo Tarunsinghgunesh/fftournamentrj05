@@ -129,18 +129,18 @@ export default function ContactSection() {
             {/* Full High-Profile Portrait Card */}
             <div className="glass-panel-glow border-beam rounded-3xl p-6 border border-white/10 relative overflow-hidden">
               
-              <div className="relative rounded-2xl overflow-hidden border border-white/10 shadow-2xl bg-obsidian mb-5">
+              <div className="relative rounded-2xl overflow-hidden border border-white/15 shadow-2xl bg-obsidian mb-5">
                 <img
                   src={organizer.photo}
                   alt={organizer.name}
-                  className="w-full h-80 sm:h-96 object-cover object-top hover:scale-[1.02] transition-transform duration-500"
+                  className="w-full h-[400px] sm:h-[480px] object-cover object-[center_12%] hover:scale-[1.02] transition-transform duration-500"
                 />
                 
-                {/* Gradient overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-obsidian via-obsidian/30 to-transparent" />
+                {/* Subtle soft bottom gradient to blend gracefully with bottom badge */}
+                <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-obsidian/95 via-obsidian/50 to-transparent" />
                 
                 {/* Online Host Verification Pill */}
-                <div className="absolute top-3 left-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-obsidian/90 border border-neonGreen/50 text-neonGreen text-[11px] font-orbitron font-bold backdrop-blur-md shadow-glow-green/20">
+                <div className="absolute top-3 left-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-obsidian/90 border border-neonGreen/60 text-neonGreen text-[11px] font-orbitron font-bold backdrop-blur-md shadow-glow-green/30">
                   <span className="w-2 h-2 rounded-full bg-neonGreen animate-ping" />
                   <span>Verified Host Online</span>
                 </div>
@@ -150,11 +150,11 @@ export default function ContactSection() {
                   <span className="text-[10px] font-orbitron uppercase tracking-widest text-neonGold font-bold block mb-0.5">
                     Tournament Director & Chief Host
                   </span>
-                  <h3 className="text-2xl font-black font-orbitron text-white tracking-wide">
+                  <h3 className="text-2xl font-black font-orbitron text-white tracking-wide drop-shadow-md">
                     {organizer.name}
                   </h3>
-                  <div className="flex items-center gap-2 text-xs text-slate-300 font-mono mt-0.5">
-                    <span>RJ05 Esports</span> • <span className="text-neonCyan">Host UID: {organizer.uid}</span>
+                  <div className="flex items-center gap-2 text-xs text-slate-200 font-mono mt-0.5">
+                    <span>RJ05 Esports</span> • <span className="text-neonCyan font-bold">Host UID: {organizer.uid}</span>
                   </div>
                 </div>
               </div>

@@ -13,6 +13,7 @@ import {
   MapPin
 } from 'lucide-react';
 import { playClick, playHover } from '../utils/audio';
+import RJ05Logo from './RJ05Logo';
 
 export default function Footer() {
   const rules = [
@@ -69,11 +70,7 @@ export default function Footer() {
           {/* Col 1: Brand & Bio */}
           <div className="space-y-3.5 md:col-span-1">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-neonOrange to-neonGold p-[2px] shadow-glow-orange">
-                <div className="w-full h-full bg-obsidian rounded-[6px] flex items-center justify-center">
-                  <Flame className="w-5 h-5 text-neonOrange" />
-                </div>
-              </div>
+              <RJ05Logo className="w-10 h-10" />
               <span className="font-orbitron font-extrabold text-lg text-white tracking-wider">
                 RJ05 <span className="text-neonOrange">ESPORTS</span>
               </span>

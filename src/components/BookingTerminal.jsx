@@ -619,39 +619,44 @@ export default function BookingTerminal({ onBookingSuccess }) {
               {/* UPI Copy Details */}
               <div className="space-y-3 text-xs">
                 
-                <div className="bg-surface rounded-xl p-3.5 border border-white/10 space-y-2">
+                <div className="bg-surface rounded-xl p-3.5 border border-white/10 space-y-2.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-slate-400 font-orbitron">Amount:</span>
+                    <span className="text-slate-400 font-orbitron">Payable Amount:</span>
                     <span className="font-orbitron font-extrabold text-neonGold text-lg">₹{amount}.00</span>
                   </div>
 
                   <div className="flex items-center justify-between">
                     <span className="text-slate-400 font-orbitron">Receiver UPI:</span>
-                    <div className="flex items-center gap-1 font-mono font-bold text-neonCyan">
-                      <span>{officialUpi}</span>
-                      <button
-                        onClick={() => handleCopy(officialUpi, 'upi')}
-                        className="p-1 hover:text-white transition-colors cursor-pointer"
-                        title="Copy UPI ID"
-                      >
-                        {copiedText === 'upi' ? <Check className="w-3.5 h-3.5 text-neonGreen" /> : <Copy className="w-3.5 h-3.5" />}
-                      </button>
-                    </div>
+                    <span className="font-mono font-bold text-neonCyan">{officialUpi}</span>
                   </div>
 
                   <div className="flex items-center justify-between">
-                    <span className="text-slate-400 font-orbitron">Host Name:</span>
-                    <span className="font-semibold text-white">{payeeName}</span>
+                    <span className="text-slate-400 font-orbitron">Host & Payee:</span>
+                    <span className="font-semibold text-white">{payeeName} <span className="text-[10px] text-neonGreen font-mono font-bold">(SBI Verified)</span></span>
                   </div>
 
                   <div className="flex items-center justify-between">
                     <span className="text-slate-400 font-orbitron">Category:</span>
                     <span className="font-semibold text-neonOrange">{bookingType} ({bookingType === 'Squad' ? '4 Players' : '1 Player'})</span>
                   </div>
+
+                  {/* 1-Tap Full Width Copy UPI Button */}
+                  <button
+                    type="button"
+                    onClick={() => handleCopy(officialUpi, 'upi')}
+                    className="w-full py-2 px-3 rounded-lg bg-surfaceLight hover:bg-surface border border-white/10 hover:border-neonCyan/40 text-slate-200 hover:text-neonCyan text-[11px] font-orbitron font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                  >
+                    {copiedText === 'upi' ? <Check className="w-3.5 h-3.5 text-neonGreen" /> : <Copy className="w-3.5 h-3.5" />}
+                    <span>{copiedText === 'upi' ? 'UPI ID Copied to Clipboard!' : 'Copy UPI ID (8209071700@ptsbi)'}</span>
+                  </button>
                 </div>
 
                 <div className="p-3 rounded-lg bg-surfaceLight border border-white/10 text-[11px] text-slate-300 leading-relaxed">
-                  💡 <strong className="text-white">Next Step:</strong> After paying, open the transaction details in your app, copy the <strong>12-digit UPI UTR / Ref No.</strong>, and paste it below.
+                  🔒 <strong className="text-white">100% Safe Direct Payment:</strong> Zero gateway deductions. Your entry fee transfers directly into Host Anirudh Singh's verified SBI UPI account.
+                </div>
+
+                <div className="p-3 rounded-lg bg-neonGold/10 border border-neonGold/30 text-[11px] text-slate-300 leading-relaxed">
+                  📢 <strong className="text-neonGold">Match Timing Notice:</strong> Exact match slot time will be announced live on this website and dispatched via WhatsApp/Email to registered players!
                 </div>
 
               </div>
@@ -732,22 +737,22 @@ export default function BookingTerminal({ onBookingSuccess }) {
         )}
 
         {/* ========================================================= */}
-        {/* STEP 3: OFFICIAL ESPORTS BOARDING PASS */}
+        {/* STEP 3: OFFICIAL ESPORTS BOARDING PASS (PENDING / CONFIRMED) */}
         {/* ========================================================= */}
         {currentStep === 3 && confirmedBooking && (
-          <div className="glass-panel-glow rounded-3xl p-6 sm:p-10 max-w-2xl mx-auto border-2 border-neonGreen/60 shadow-glow-green/40 animate-in fade-in zoom-in-95 duration-200 relative overflow-hidden">
+          <div className="glass-panel-glow rounded-3xl p-6 sm:p-10 max-w-2xl mx-auto border-2 border-neonGold/60 shadow-glow-gold/40 animate-in fade-in zoom-in-95 duration-200 relative overflow-hidden">
             
-            <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-neonGreen via-neonCyan to-neonGold" />
+            <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-neonOrange via-neonGold to-neonGreen" />
 
             <div className="text-center pb-6 border-b border-white/10">
-              <div className="w-14 h-14 mx-auto rounded-full bg-neonGreen/10 border-2 border-neonGreen flex items-center justify-center text-neonGreen mb-3 shadow-glow-green animate-bounce">
-                <Check className="w-8 h-8 stroke-[3]" />
+              <div className="w-14 h-14 mx-auto rounded-full bg-neonGold/10 border-2 border-neonGold flex items-center justify-center text-neonGold mb-3 shadow-glow-gold animate-pulse">
+                <ShieldCheck className="w-8 h-8 stroke-[2.5]" />
               </div>
-              <span className="text-neonGreen text-xs font-orbitron uppercase tracking-widest font-black">
-                ENTRY CONFIRMED & LOGGED IN GOOGLE SHEET
+              <span className="text-neonGold text-xs font-orbitron uppercase tracking-widest font-black">
+                PAYMENT RECEIVED • PENDING HOST VERIFICATION
               </span>
               <h3 className="text-2xl sm:text-3xl font-black font-orbitron text-white uppercase mt-1">
-                OFFICIAL ESPORTS PASS
+                SLOT RESERVATION PASS
               </h3>
               <p className="text-xs text-slate-300 mt-0.5">
                 RJ05 Esports • Season 1 Tournament (1st Match)
@@ -758,7 +763,7 @@ export default function BookingTerminal({ onBookingSuccess }) {
               
               <div className="bg-gradient-to-r from-neonOrange/20 to-neonGold/20 border border-neonGold/40 rounded-2xl p-4 text-center">
                 <span className="text-[11px] font-orbitron uppercase text-neonGold font-bold tracking-widest block mb-1">
-                  OFFICIALLY RESERVED SLOT
+                  TEMPORARILY RESERVED SLOT
                 </span>
                 <span className="text-3xl sm:text-4xl font-black font-orbitron text-white tracking-wider">
                   {confirmedBooking.slotNo}
@@ -785,8 +790,8 @@ export default function BookingTerminal({ onBookingSuccess }) {
                 </div>
 
                 <div className="bg-surface rounded-xl p-3 border border-white/10">
-                  <span className="text-slate-400 text-[10px] uppercase font-orbitron block">Verified UTR</span>
-                  <span className="font-mono font-bold text-neonGreen text-xs">{confirmedBooking.utr}</span>
+                  <span className="text-slate-400 text-[10px] uppercase font-orbitron block">Submitted UTR</span>
+                  <span className="font-mono font-bold text-neonGold text-xs">{confirmedBooking.utr}</span>
                 </div>
               </div>
 
@@ -803,14 +808,14 @@ export default function BookingTerminal({ onBookingSuccess }) {
                 </div>
               </div>
 
-              {/* Match Briefing Reminder */}
-              <div className="p-3.5 rounded-xl bg-neonGreen/10 border border-neonGreen/30 text-xs text-slate-300 space-y-1">
-                <div className="flex items-center gap-1.5 text-neonGreen font-orbitron font-bold text-[11px]">
+              {/* Anti-Fraud Host Verification Notice */}
+              <div className="p-3.5 rounded-xl bg-neonGold/10 border border-neonGold/30 text-xs text-slate-300 space-y-1">
+                <div className="flex items-center gap-1.5 text-neonGold font-orbitron font-bold text-[11px]">
                   <ShieldCheck className="w-4 h-4" />
-                  <span>Room Credentials Protocol:</span>
+                  <span>Host Verification Protocol (Anti-Fraud):</span>
                 </div>
                 <p className="text-[11px] text-slate-300 leading-relaxed">
-                  Room ID & Password will be delivered via WhatsApp to <strong className="text-white">{confirmedBooking.mobile}</strong> 15 minutes before match kickoff. Confirmation receipt has been dispatched to <strong className="text-white">{confirmedBooking.email}</strong>.
+                  Your 12-Digit UTR (<strong className="text-neonGold font-mono">{confirmedBooking.utr}</strong>) has been transmitted to Host <strong className="text-white">Anirudh Singh</strong>. As soon as Anirudh confirms your payment receipt, your slot turns to <strong className="text-neonGreen">CONFIRMED</strong> on the live roster, and your official Booyah boarding pass is emailed to <strong className="text-white">{confirmedBooking.email}</strong>!
                 </p>
               </div>
 
@@ -820,13 +825,13 @@ export default function BookingTerminal({ onBookingSuccess }) {
             <div className="flex flex-col sm:flex-row gap-3 pt-2">
               <button
                 onClick={() => {
-                  const summary = `*RJ05 ESPORTS PASS*\nSlot: ${confirmedBooking.slotNo}\nTeam: ${confirmedBooking.teamName}\nMatch: Sun, 29 Nov 2026 (Bermuda)\nUTR: ${confirmedBooking.utr}\nOrder: ${confirmedBooking.orderId}\nHost: Anirudh Singh (3029117867)`;
+                  const summary = `*RJ05 ESPORTS PASS (PENDING VERIFICATION)*\nSlot: ${confirmedBooking.slotNo}\nTeam: ${confirmedBooking.teamName}\nMatch: Sun, 29 Nov 2026 (Bermuda)\nUTR: ${confirmedBooking.utr}\nOrder: ${confirmedBooking.orderId}\nHost: Anirudh Singh (3029117867)`;
                   handleCopy(summary, 'passSummary');
                 }}
-                className="flex-1 py-3 px-4 rounded-xl bg-neonGreen text-obsidian font-orbitron font-extrabold text-xs uppercase tracking-wider shadow-glow-green hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-2"
+                className="flex-1 py-3 px-4 rounded-xl bg-gradient-to-r from-neonOrange to-neonGold text-obsidian font-orbitron font-extrabold text-xs uppercase tracking-wider shadow-glow-orange hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-2"
               >
                 {copiedText === 'passSummary' ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                <span>{copiedText === 'passSummary' ? 'Pass Copied to Clipboard!' : 'Copy Ticket Details'}</span>
+                <span>{copiedText === 'passSummary' ? 'Ticket Details Copied!' : 'Copy Ticket Details'}</span>
               </button>
 
               <button
