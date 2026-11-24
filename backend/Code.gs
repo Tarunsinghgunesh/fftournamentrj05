@@ -631,7 +631,10 @@ function handleReviewDecision(ss, orderId, decision) {
  * ============================================================================
  */
 function handleMacroDroidWebhook(ss, utr, amount) {
-  const cleanUtr = String(utr || '').trim().replace(/\D/g, '');
+  let cleanUtr = String(utr || '').trim().replace(/\D/g, '');
+  if (cleanUtr.length >= 12) {
+    cleanUtr = cleanUtr.slice(-12);
+  }
   if (cleanUtr.length < 12) {
     return jsonResponse({ success: false, error: 'INVALID_UTR', message: 'Valid 12-digit numeric UTR required.' });
   }
