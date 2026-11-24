@@ -6,15 +6,13 @@ import {
   Check, 
   Users, 
   Flame, 
-  Skull, 
   Target, 
   ArrowRight, 
-  Zap, 
   Clock, 
   MapPin, 
-  Sparkles,
   Calendar,
-  Crown
+  Sparkles,
+  ChevronDown
 } from 'lucide-react';
 import { playClick, playHover, playSuccess } from '../utils/audio';
 
@@ -23,7 +21,7 @@ export default function HeroArena() {
   const hostUid = '3029117867';
   const hostIgn = 'ANIRUDH•RJ05';
 
-  // Countdown timer targeting Sunday, 29 Nov 2026, 18:00 IST
+  // Target match countdown (Sunday, 29 November 2026, 18:00 IST)
   const [timeLeft, setTimeLeft] = useState({
     days: 4,
     hours: 21,
@@ -62,72 +60,81 @@ export default function HeroArena() {
   };
 
   return (
-    <section id="hero" className="relative min-h-screen pt-28 pb-16 flex items-center justify-center overflow-hidden cyber-grid">
+    <section id="hero" className="relative min-h-screen pt-28 pb-20 flex items-center justify-center overflow-hidden cyber-grid">
       
-      {/* Background ambient lighting */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[500px] bg-neonOrange/15 blur-[150px] pointer-events-none rounded-full" />
-      <div className="absolute top-2/3 right-10 w-[400px] h-[400px] bg-neonCyan/10 blur-[130px] pointer-events-none rounded-full" />
+      {/* High-Impact Cinematic Bermuda Battlefield Background Art */}
+      <div className="absolute inset-0 z-0">
+        <img
+          src="/bermuda-battlefield.jpg"
+          alt="Free Fire Bermuda Battlefield Arena"
+          className="w-full h-full object-cover object-center opacity-25 filter brightness-75 scale-105 transform hover:scale-100 transition-transform duration-1000"
+        />
+        {/* Radial vignette overlays */}
+        <div className="absolute inset-0 bg-gradient-to-t from-obsidian via-obsidian/85 to-obsidian/60" />
+        <div className="absolute inset-0 bg-radial-gradient from-transparent via-obsidian/70 to-obsidian" />
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[750px] h-[550px] bg-neonOrange/15 blur-[160px] pointer-events-none rounded-full" />
+      </div>
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full z-10">
         
-        {/* Top Badges */}
-        <div className="flex flex-wrap items-center justify-center gap-3 mb-6">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-surfaceLight/80 border border-neonOrange/40 text-neonOrange text-xs font-semibold tracking-wider font-orbitron shadow-glow-orange/20 animate-pulse-slow">
-            <Flame className="w-3.5 h-3.5 text-neonOrange" />
+        {/* Top Floating Match Day Announcement Pills */}
+        <div className="flex flex-wrap items-center justify-center gap-2.5 sm:gap-3 mb-6">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-surfaceLight/90 border border-neonOrange/50 text-neonOrange text-xs font-semibold tracking-wider font-orbitron shadow-glow-orange/30">
+            <Flame className="w-3.5 h-3.5 fill-neonOrange" />
             <span>SEASON 1 TOURNAMENT • 1ST MATCH</span>
           </div>
 
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-neonCyan/10 border border-neonCyan/30 text-neonCyan text-xs font-semibold tracking-wider font-orbitron">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-neonCyan/15 border border-neonCyan/40 text-neonCyan text-xs font-semibold tracking-wider font-orbitron">
             <Calendar className="w-3.5 h-3.5 text-neonCyan" />
             <span>SUNDAY, 29 NOVEMBER 2026</span>
           </div>
 
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-neonGold/10 border border-neonGold/30 text-neonGold text-xs font-semibold tracking-wider font-orbitron">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-neonGold/15 border border-neonGold/40 text-neonGold text-xs font-semibold tracking-wider font-orbitron">
             <MapPin className="w-3.5 h-3.5 text-neonGold" />
             <span>BERMUDA (ONLY)</span>
           </div>
         </div>
 
-        {/* Main Headline */}
+        {/* Main Headline with Neon Gradients */}
         <div className="text-center max-w-4xl mx-auto mb-8">
-          <h1 className="font-orbitron font-black text-4xl sm:text-6xl lg:text-7xl tracking-tight text-white uppercase leading-none drop-shadow-xl">
+          <h1 className="font-orbitron font-black text-4xl sm:text-6xl lg:text-7xl tracking-tight text-white uppercase leading-[1.05] drop-shadow-2xl">
             DROP. <span className="text-transparent bg-clip-text bg-gradient-to-r from-neonOrange via-neonGold to-orange-500">SURVIVE.</span><br />
-            CLAIM THE <span className="text-transparent bg-clip-text bg-gradient-to-r from-neonCyan via-teal-300 to-neonGreen drop-shadow-[0_0_25px_rgba(0,240,255,0.4)]">BOOYAH!</span>
+            CLAIM THE <span className="text-transparent bg-clip-text bg-gradient-to-r from-neonCyan via-teal-300 to-neonGreen drop-shadow-[0_0_30px_rgba(0,240,255,0.45)]">BOOYAH!</span>
           </h1>
           <p className="mt-5 text-slate-300 text-sm sm:text-base max-w-2xl mx-auto font-light leading-relaxed">
             Welcome to the official 1st Match of <strong className="text-white font-medium">RJ05 Esports Season 1</strong>. Exactly 12 Squads (48 Players Max) battling on Bermuda for the ₹600 Booyah Trophy.
           </p>
         </div>
 
-        {/* Match Kickoff Countdown Timer */}
+        {/* Countdown Timer with Neon Border Beam */}
         <div className="max-w-xl mx-auto mb-10">
-          <div className="glass-panel-glow rounded-2xl p-4 sm:p-5 text-center relative overflow-hidden">
+          <div className="glass-panel-glow border-beam rounded-2xl p-4 sm:p-5 text-center relative overflow-hidden">
             <div className="flex items-center justify-center gap-2 text-xs font-semibold text-neonOrange font-orbitron uppercase tracking-widest mb-3">
               <Clock className="w-4 h-4 text-neonOrange animate-spin" style={{ animationDuration: '10s' }} />
               <span>Match Kickoff Countdown (Sunday, 29 Nov 2026)</span>
             </div>
 
             <div className="grid grid-cols-4 gap-2.5 max-w-sm mx-auto">
-              <div className="bg-obsidian/85 border border-white/10 rounded-xl p-2.5">
-                <span className="font-orbitron font-extrabold text-2xl sm:text-3xl text-white">
+              <div className="bg-obsidian/90 border border-white/10 rounded-xl p-2.5 shadow-inner">
+                <span className="font-orbitron font-black text-2xl sm:text-3xl text-white">
                   {String(timeLeft.days).padStart(2, '0')}
                 </span>
                 <span className="block text-[9px] text-slate-400 font-medium uppercase tracking-wider mt-0.5">Days</span>
               </div>
-              <div className="bg-obsidian/85 border border-white/10 rounded-xl p-2.5">
-                <span className="font-orbitron font-extrabold text-2xl sm:text-3xl text-neonGold">
+              <div className="bg-obsidian/90 border border-white/10 rounded-xl p-2.5 shadow-inner">
+                <span className="font-orbitron font-black text-2xl sm:text-3xl text-neonGold">
                   {String(timeLeft.hours).padStart(2, '0')}
                 </span>
                 <span className="block text-[9px] text-slate-400 font-medium uppercase tracking-wider mt-0.5">Hours</span>
               </div>
-              <div className="bg-obsidian/85 border border-white/10 rounded-xl p-2.5">
-                <span className="font-orbitron font-extrabold text-2xl sm:text-3xl text-neonCyan">
+              <div className="bg-obsidian/90 border border-white/10 rounded-xl p-2.5 shadow-inner">
+                <span className="font-orbitron font-black text-2xl sm:text-3xl text-neonCyan">
                   {String(timeLeft.minutes).padStart(2, '0')}
                 </span>
                 <span className="block text-[9px] text-slate-400 font-medium uppercase tracking-wider mt-0.5">Minutes</span>
               </div>
-              <div className="bg-obsidian/85 border border-white/10 rounded-xl p-2.5">
-                <span className="font-orbitron font-extrabold text-2xl sm:text-3xl text-neonGreen">
+              <div className="bg-obsidian/90 border border-white/10 rounded-xl p-2.5 shadow-inner">
+                <span className="font-orbitron font-black text-2xl sm:text-3xl text-neonGreen">
                   {String(timeLeft.seconds).padStart(2, '0')}
                 </span>
                 <span className="block text-[9px] text-slate-400 font-medium uppercase tracking-wider mt-0.5">Seconds</span>
@@ -140,7 +147,7 @@ export default function HeroArena() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-5xl mx-auto mb-10">
           
           {/* Card 1: 1st Prize */}
-          <div className="glass-panel p-4 rounded-xl border-l-4 border-l-neonGold">
+          <div className="glass-panel p-4 rounded-xl border-l-4 border-l-neonGold hover:border-white/20 transition-all">
             <div className="flex items-center gap-1.5 text-neonGold mb-1">
               <Trophy className="w-4 h-4" />
               <span className="text-[10px] font-orbitron uppercase font-bold tracking-wider">1st Prize (Booyah)</span>
@@ -152,7 +159,7 @@ export default function HeroArena() {
           </div>
 
           {/* Card 2: Entry Fee */}
-          <div className="glass-panel p-4 rounded-xl border-l-4 border-l-neonOrange">
+          <div className="glass-panel p-4 rounded-xl border-l-4 border-l-neonOrange hover:border-white/20 transition-all">
             <div className="flex items-center gap-1.5 text-neonOrange mb-1">
               <Target className="w-4 h-4" />
               <span className="text-[10px] font-orbitron uppercase font-bold tracking-wider">Entry Fees</span>
@@ -164,7 +171,7 @@ export default function HeroArena() {
           </div>
 
           {/* Card 3: Total Capacity */}
-          <div className="glass-panel p-4 rounded-xl border-l-4 border-l-neonCyan">
+          <div className="glass-panel p-4 rounded-xl border-l-4 border-l-neonCyan hover:border-white/20 transition-all">
             <div className="flex items-center gap-1.5 text-neonCyan mb-1">
               <Users className="w-4 h-4" />
               <span className="text-[10px] font-orbitron uppercase font-bold tracking-wider">Total Capacity</span>
@@ -176,7 +183,7 @@ export default function HeroArena() {
           </div>
 
           {/* Card 4: Verified Host FF UID */}
-          <div className="glass-panel p-4 rounded-xl border-l-4 border-l-neonGreen relative">
+          <div className="glass-panel p-4 rounded-xl border-l-4 border-l-neonGreen hover:border-white/20 transition-all relative">
             <div className="flex items-center justify-between text-neonGreen mb-1">
               <div className="flex items-center gap-1.5">
                 <Shield className="w-4 h-4" />
@@ -189,7 +196,7 @@ export default function HeroArena() {
               </span>
               <button
                 onClick={handleCopyUid}
-                className="p-1 rounded bg-white/5 hover:bg-neonGreen/20 text-slate-300 hover:text-neonGreen transition-colors cursor-pointer"
+                className="p-1.5 rounded-md bg-white/5 hover:bg-neonGreen/20 text-slate-300 hover:text-neonGreen transition-colors cursor-pointer"
                 title="Copy Host UID"
               >
                 {copied ? <Check className="w-3.5 h-3.5 text-neonGreen" /> : <Copy className="w-3.5 h-3.5" />}
@@ -200,7 +207,7 @@ export default function HeroArena() {
 
         </div>
 
-        {/* CTA Buttons */}
+        {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 max-w-md mx-auto">
           <a
             href="#booking"

@@ -6,6 +6,7 @@ import LiveRosterAndSearch from './components/LiveRosterAndSearch';
 import BookingTerminal from './components/BookingTerminal';
 import ContactSection from './components/ContactSection';
 import Footer from './components/Footer';
+import FloatingEmbers from './components/FloatingEmbers';
 import { Flame } from 'lucide-react';
 import { playClick } from './utils/audio';
 
@@ -27,11 +28,15 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-obsidian text-slate-100 flex flex-col font-poppins relative selection:bg-neonOrange selection:text-white">
+      
+      {/* Dynamic Animated Floating Ember Particles */}
+      <FloatingEmbers />
+
       {/* Sticky Glassmorphic Navbar */}
       <Navbar onOpenSearch={handleOpenSearch} />
 
       {/* Main Gaming Portal Content */}
-      <main className="flex-1">
+      <main className="flex-1 relative z-10">
         {/* Hero Section with Season 1 Info, Bermuda Map, Countdown, Prize Pool */}
         <HeroArena />
 
@@ -44,7 +49,7 @@ export default function App() {
         {/* Squad / Solo Booking Terminal with Dynamic UPI QR & Mandatory 12-Digit UTR Check */}
         <BookingTerminal onBookingSuccess={handleBookingSuccess} />
 
-        {/* Organizer Desk with Real Photos, Free Fire MAX Profile, & Support Tickets */}
+        {/* Organizer Desk with Full Real Portrait, Free Fire MAX HD Profile Lightbox, & Support Tickets */}
         <ContactSection />
       </main>
 

@@ -7,13 +7,14 @@ import {
   Volume2, 
   VolumeX, 
   Clock,
-  Sparkles,
   MapPin,
   Trophy,
   Target,
   Skull,
   Crown,
-  ChevronRight
+  ChevronRight,
+  Flame,
+  Award
 } from 'lucide-react';
 import { playClick, playHover, toggleMute, getMuteState } from '../utils/audio';
 
@@ -144,9 +145,9 @@ export default function AboutAndCharacterCards() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         
         {/* ========================================================= */}
-        {/* SECTION 1: 3D CHARACTER & POWER SHOWCASE */}
+        {/* SECTION 1: 3D CHARACTER & TACTICAL POWER SHOWCASE */}
         {/* ========================================================= */}
-        <div className="mb-20">
+        <div className="mb-24">
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
             <div>
               <span className="text-neonCyan text-xs font-orbitron uppercase tracking-widest font-bold">
@@ -221,14 +222,13 @@ export default function AboutAndCharacterCards() {
             <div className="lg:col-span-7">
               {characters[selectedCharacter] && (
                 <div 
-                  className="glass-panel-glow rounded-3xl p-6 sm:p-8 relative overflow-hidden border-2 transition-all duration-300"
-                  style={{ borderColor: `${characters[selectedCharacter].archetypeColor}70` }}
+                  className="glass-panel-glow border-beam rounded-3xl p-6 sm:p-8 relative overflow-hidden transition-all duration-300"
                 >
                   <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-white/10">
                     <div>
                       <div className="flex items-center gap-2">
                         <span className="w-2.5 h-2.5 rounded-full animate-ping" style={{ backgroundColor: characters[selectedCharacter].archetypeColor }} />
-                        <span className="text-xs font-orbitron uppercase tracking-widest text-slate-400">Tactical Archetype</span>
+                        <span className="text-xs font-orbitron uppercase tracking-widest text-slate-400">Class Archetype</span>
                       </div>
                       <h3 className="text-2xl sm:text-3xl font-black font-orbitron text-white mt-1">
                         {characters[selectedCharacter].name}
@@ -250,7 +250,7 @@ export default function AboutAndCharacterCards() {
                     {characters[selectedCharacter].description}
                   </p>
 
-                  {/* Power Stat Bars */}
+                  {/* Stat Bars */}
                   <div className="space-y-3.5 pt-2">
                     <div>
                       <div className="flex justify-between text-xs font-orbitron text-slate-300 mb-1">
@@ -323,69 +323,92 @@ export default function AboutAndCharacterCards() {
         </div>
 
         {/* ========================================================= */}
-        {/* SECTION 2: OFFICIAL TOURNAMENT MAP: BERMUDA ONLY */}
+        {/* SECTION 2: OFFICIAL TOURNAMENT MAP: BERMUDA & ₹600 BOOYAH */}
         {/* ========================================================= */}
         <div id="map" className="glass-panel-glow rounded-3xl p-6 sm:p-10 border border-white/10 relative overflow-hidden">
           
-          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 pb-6 border-b border-white/10">
-            <div>
-              <div className="flex items-center gap-2 text-neonGold font-orbitron text-xs font-bold uppercase tracking-widest">
-                <MapPin className="w-4 h-4" />
-                <span>OFFICIAL TOURNAMENT MAP FOR SUNDAY, 29 NOV 2026</span>
-              </div>
-              <h3 className="text-2xl sm:text-4xl font-black font-orbitron text-white uppercase mt-1">
-                BERMUDA <span className="text-transparent bg-clip-text bg-gradient-to-r from-neonGold to-neonOrange">(ONLY)</span>
-              </h3>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <div className="px-4 py-2 rounded-xl bg-obsidian border border-neonGold/40 text-neonGold font-orbitron text-xs font-bold">
-                1st Prize: ₹600 Cash
-              </div>
-              <div className="px-4 py-2 rounded-xl bg-obsidian border border-white/10 text-slate-300 font-orbitron text-xs">
-                Capacity: 12 Squads / 48 Players
-              </div>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6">
-            <div className="bg-obsidian/70 rounded-2xl p-5 border border-white/5 space-y-2">
-              <span className="text-[11px] font-orbitron font-bold text-neonOrange uppercase tracking-wider block">
-                Primary Hot Drops
-              </span>
-              <p className="text-xs text-slate-300 leading-relaxed">
-                Clock Tower, Factory Complex, Peak High Grounds, and Pochinok. Strict mobile-only lobbies ensure authentic close-quarters shotgun & SMG combat.
-              </p>
-            </div>
-
-            <div className="bg-obsidian/70 rounded-2xl p-5 border border-white/5 space-y-2">
-              <span className="text-[11px] font-orbitron font-bold text-neonCyan uppercase tracking-wider block">
-                Winning Prize Breakdown
-              </span>
-              <div className="text-xs space-y-1 text-slate-300">
-                <div className="flex justify-between">
-                  <span>1st Place (Booyah Squad):</span>
-                  <strong className="text-neonGold font-orbitron">₹600 Cash</strong>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            
+            {/* Left Column: Real Booyah Trophy Banner */}
+            <div className="lg:col-span-5 relative rounded-2xl overflow-hidden border border-neonGold/40 shadow-glow-gold/20 group">
+              <img
+                src="/booyah-trophy.jpg"
+                alt="Free Fire Booyah Championship Cup"
+                className="w-full h-64 sm:h-72 object-cover group-hover:scale-105 transition-transform duration-500"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-obsidian via-obsidian/40 to-transparent" />
+              <div className="absolute bottom-4 left-4 right-4">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-neonGold/20 border border-neonGold/50 text-neonGold text-xs font-orbitron font-bold mb-1">
+                  <Crown className="w-3.5 h-3.5" />
+                  <span>SEASON 1 BOOYAH CHAMPION</span>
                 </div>
-                <div className="flex justify-between">
-                  <span>Entry Fee (Squad of 4):</span>
-                  <strong className="text-white font-orbitron">₹100 (₹25/P)</strong>
+                <div className="text-2xl font-black font-orbitron text-white">
+                  ₹600 Cash Trophy
                 </div>
-                <div className="flex justify-between">
-                  <span>Solo Entry Option:</span>
-                  <strong className="text-white font-orbitron">₹25</strong>
+                <p className="text-[11px] text-slate-300">
+                  Instant UPI prize delivery to the winning squad leader.
+                </p>
+              </div>
+            </div>
+
+            {/* Right Column: Bermuda Battlefield Specifications */}
+            <div className="lg:col-span-7 space-y-4">
+              
+              <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-white/10">
+                <div>
+                  <span className="text-neonGold font-orbitron text-xs font-bold uppercase tracking-widest block">
+                    Certified Battleground Map
+                  </span>
+                  <h3 className="text-2xl sm:text-3xl font-black font-orbitron text-white uppercase mt-0.5">
+                    BERMUDA <span className="text-neonOrange">(ONLY)</span>
+                  </h3>
+                </div>
+
+                <div className="px-3.5 py-1.5 rounded-xl bg-obsidian border border-neonCyan/40 text-neonCyan font-orbitron text-xs font-bold">
+                  Strict 12 Squads / 48 Players
                 </div>
               </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                
+                <div className="bg-obsidian/80 p-3.5 rounded-xl border border-white/5 space-y-1">
+                  <div className="flex items-center gap-2 text-neonOrange font-orbitron font-bold">
+                    <Target className="w-4 h-4" />
+                    <span>Hot Drops & Compound Zones</span>
+                  </div>
+                  <p className="text-slate-400 text-[11px] leading-relaxed">
+                    Clock Tower, Factory Complex, Peak High Grounds, and Pochinok. Intense mobile-only combat.
+                  </p>
+                </div>
+
+                <div className="bg-obsidian/80 p-3.5 rounded-xl border border-white/5 space-y-1">
+                  <div className="flex items-center gap-2 text-neonGreen font-orbitron font-bold">
+                    <ShieldCheck className="w-4 h-4" />
+                    <span>Anti-Cheat & Mobile-Only</span>
+                  </div>
+                  <p className="text-slate-400 text-[11px] leading-relaxed">
+                    No PC emulators (BlueStacks/LDPlayer). Registered Free Fire UIDs are strictly cross-checked.
+                  </p>
+                </div>
+
+              </div>
+
+              <div className="p-3.5 rounded-xl bg-surfaceLight/80 border border-white/5 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+                <div>
+                  <span className="text-slate-400 text-[11px] block">Match Date & Time:</span>
+                  <strong className="text-white font-orbitron">Sunday, 29 November 2026</strong>
+                </div>
+                <a
+                  href="#booking"
+                  onClick={() => playClick()}
+                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-neonOrange to-orange-600 text-white font-orbitron text-xs font-bold uppercase tracking-wider shadow-glow-orange hover:scale-105 transition-all"
+                >
+                  Book Bermuda Slot
+                </a>
+              </div>
+
             </div>
 
-            <div className="bg-obsidian/70 rounded-2xl p-5 border border-white/5 space-y-2">
-              <span className="text-[11px] font-orbitron font-bold text-neonGreen uppercase tracking-wider block">
-                Strict Fair Play Rules
-              </span>
-              <p className="text-xs text-slate-300 leading-relaxed">
-                Zero tolerance for PC emulators, modified APKs, or teaming. Every participant is validated against registered Free Fire UIDs before the custom room commences.
-              </p>
-            </div>
           </div>
 
         </div>
