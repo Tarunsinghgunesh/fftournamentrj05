@@ -16,7 +16,7 @@
  * ============================================================================
  */
 
-// OFFICIAL GOOGLE SPREADSHEET ID PROVIDED BY USER
+// OFFICIAL GOOGLE SPREADSHEET ID
 const SPREADSHEET_ID = '1-lN0IcUEDyn3ju54xD7y8yiU1LTmkWGxbgfO2tXWmJ0';
 const ORGANIZER_EMAIL = 'anirudhgunesh5@gmail.com';
 
@@ -53,6 +53,20 @@ const HEADERS_QUERIES = [
 ];
 
 /**
+ * 🛠️ ONE-CLICK INITIALIZATION & TEST FUNCTION
+ * You can select "testSetup" in the Apps Script top bar and click "▷ Run"
+ * to verify and create both sheets with headers without any error!
+ */
+function testSetup() {
+  const ss = getSpreadsheet();
+  const bookings = getOrCreateSheet(ss, SHEET_BOOKINGS, HEADERS_BOOKINGS);
+  const queries = getOrCreateSheet(ss, SHEET_QUERIES, HEADERS_QUERIES);
+  Logger.log('✅ SUCCESS: Both sheets Bookings & Queries initialized in your Google Sheet!');
+  Logger.log('Google Sheet URL: ' + ss.getUrl());
+  return 'SUCCESS: Initialized ' + ss.getName();
+}
+
+/**
  * Robust spreadsheet getter:
  * Opens exact spreadsheet ID or falls back to active bound spreadsheet
  */
@@ -75,7 +89,7 @@ function getSpreadsheet() {
  */
 function doGet(e) {
   try {
-    const params = e.parameter || {};
+    const params = e && e.parameter ? e.parameter : {};
     const action = params.action || 'stats';
     const ss = getSpreadsheet();
     const sheet = getOrCreateSheet(ss, SHEET_BOOKINGS, HEADERS_BOOKINGS);
@@ -197,13 +211,13 @@ function doGet(e) {
 function doPost(e) {
   try {
     let payload = {};
-    if (e.postData && e.postData.contents) {
+    if (e && e.postData && e.postData.contents) {
       try {
         payload = JSON.parse(e.postData.contents);
       } catch (err) {
         payload = e.parameter || {};
       }
-    } else {
+    } else if (e && e.parameter) {
       payload = e.parameter || {};
     }
 
@@ -545,7 +559,20 @@ function formatTimestamp(t) {
   }
 }
 
+/**
+ * Foolproof getOrCreateSheet:
+ * If ss, sheetName, or headers are missing, automatically falls back to defaults!
+ */
 function getOrCreateSheet(ss, sheetName, headers) {
+  if (!ss) {
+    ss = getSpreadsheet();
+  }
+  if (!sheetName) {
+    sheetName = SHEET_BOOKINGS;
+  }
+  if (!headers) {
+    headers = HEADERS_BOOKINGS;
+  }
   let sheet = ss.getSheetByName(sheetName);
   if (!sheet) {
     sheet = ss.insertSheet(sheetName);
