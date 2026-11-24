@@ -51,7 +51,7 @@ export default function BookingTerminal({ onBookingSuccess }) {
 
   const scriptUrl = import.meta.env.VITE_GOOGLE_SCRIPT_URL;
   const officialUpi = import.meta.env.VITE_UPI_ID || '8209071700@ptsbi';
-  const payeeName = import.meta.env.VITE_PAYEE_NAME || 'Anirudh Singh';
+  const payeeName = import.meta.env.VITE_PAYEE_NAME || 'Sanjo Devi';
 
   const amount = bookingType === 'Squad' ? 100 : 25;
 
@@ -631,8 +631,13 @@ export default function BookingTerminal({ onBookingSuccess }) {
                   </div>
 
                   <div className="flex items-center justify-between">
-                    <span className="text-slate-400 font-orbitron">Host & Payee:</span>
-                    <span className="font-semibold text-white">{payeeName} <span className="text-[10px] text-neonGreen font-mono font-bold">(SBI Verified)</span></span>
+                    <span className="text-slate-400 font-orbitron">Bank Payee Name:</span>
+                    <span className="font-semibold text-white">Sanjo Devi <span className="text-[10px] text-neonGreen font-mono font-bold">(SBI Verified)</span></span>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-400 font-orbitron">Tournament Host:</span>
+                    <span className="font-semibold text-neonCyan">Anirudh Singh (RJ05)</span>
                   </div>
 
                   <div className="flex items-center justify-between">
@@ -651,8 +656,11 @@ export default function BookingTerminal({ onBookingSuccess }) {
                   </button>
                 </div>
 
-                <div className="p-3 rounded-lg bg-surfaceLight border border-white/10 text-[11px] text-slate-300 leading-relaxed">
-                  🔒 <strong className="text-white">100% Safe Direct Payment:</strong> Zero gateway deductions. Your entry fee transfers directly into Host Anirudh Singh's verified SBI UPI account.
+                <div className="p-3 rounded-lg bg-surfaceLight border border-white/10 text-[11px] text-slate-300 leading-relaxed space-y-1">
+                  <div>🔒 <strong className="text-white">100% Direct SBI Payment:</strong> Zero gateway deduction.</div>
+                  <div className="text-slate-300">
+                    💡 <em>App Payee Name:</em> In PhonePe / GPay / Paytm, the verified SBI account holder name will appear as <strong className="text-neonGold font-semibold">"Sanjo Devi"</strong> for UPI ID <code className="text-neonCyan font-mono">8209071700@ptsbi</code>.
+                  </div>
                 </div>
 
                 <div className="p-3 rounded-lg bg-neonGold/10 border border-neonGold/30 text-[11px] text-slate-300 leading-relaxed">

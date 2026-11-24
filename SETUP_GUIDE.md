@@ -103,7 +103,7 @@ If an organizer receives payment offline or directly on WhatsApp, simply open th
 ```env
 VITE_GOOGLE_SCRIPT_URL=https://script.google.com/macros/s/YOUR_ACTUAL_ID/exec
 VITE_UPI_ID=8209071700@ptsbi
-VITE_PAYEE_NAME=Anirudh Singh
+VITE_PAYEE_NAME=Sanjo Devi
 ```
 
 ### Step 5.2: Build & Preview
