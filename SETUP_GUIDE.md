@@ -1,183 +1,126 @@
-# 🎮 RJ05 ESPORTS — COMPLETE SETUP & DEPLOYMENT GUIDE
+# 🎮 RJ05 ESPORTS — SEASON 1 TOURNAMENT DEPLOYMENT & OPERATION GUIDE
 
-Welcome to the official deployment manual for **RJ05 Esports — Free Fire Tournament Portal**. This guide walks you through setting up the Google Sheet database, deploying the Google Apps Script Web App, configuring MacroDroid for zero-fee payment auto-verification, and deploying the React frontend on Vercel.
+Comprehensive guide to deploying and managing the **RJ05 Esports — Season 1 Tournament (1st Match)** gaming portal with 100% live Google Sheets sync, zero fake data, and mandatory 12-digit UTR payment cross-checking.
 
 ---
 
-## 🏆 ORGANIZER CREDENTIALS SUMMARY
-- **Tournament Organization:** RJ05 Esports
+## 🏆 OFFICIAL TOURNAMENT SPECIFICATIONS
+- **Tournament Title:** RJ05 Esports — Season 1 Tournament (1st Match)
+- **Match Date:** Sunday, 29 November 2026
+- **Battleground Map:** Bermuda (Only)
+- **1st Prize (Booyah Squad):** ₹600 Cash
+- **Entry Fee:** ₹25 per player (Solo) | ₹100 per Squad (4 players)
+- **Total Capacity:** Strictly 12 Squads = 48 Players Maximum (Single Match)
+- **Official UPI ID:** `8209071700@ptsbi`
 - **Organizer:** Anirudh Singh
-- **Official Free Fire Host UID:** `3029117867`
-- **WhatsApp / Phone:** `+91 8209071700`
-- **Email:** `anirudhgunesh5@gmail.com`
-- **Instagram:** `@i.e_anirudh_rj05` ([https://instagram.com/i.e_anirudh_rj05](https://instagram.com/i.e_anirudh_rj05))
-- **Primary UPI ID:** `8209071700@ybl`
-- **Agency Credit:** Designed & Developed by [TK Web Solutions](https://tkwebsolutions.in/)
+  - **In-Game IGN:** `ANIRUDH•RJ05` | **Level:** 61 | **Guild:** `CEXPRIMER'S` | **FF UID:** `3029117867`
+  - **WhatsApp / Phone:** `+91 8209071700`
+  - **Email:** `anirudhgunesh5@gmail.com`
+  - **Instagram:** `@i.e_anirudh_rj05` ([https://instagram.com/i.e_anirudh_rj05](https://instagram.com/i.e_anirudh_rj05))
+- **Agency Credit:** Made by [TK Web Solutions](https://tkwebsolutions.in/)
 
 ---
 
 ## 📑 TABLE OF CONTENTS
-1. [Google Sheets & Apps Script Setup](#1-google-sheets--apps-script-setup)
-2. [MacroDroid Zero-Fee Auto-Verification Setup](#2-macrodroid-zero-fee-auto-verification-setup)
-3. [Local Development & Environment Configuration](#3-local-development--environment-configuration)
-4. [Deploying to Vercel (1-Click & CLI)](#4-deploying-to-vercel)
-5. [Testing & Operational Checklist](#5-testing--operational-checklist)
+1. [Google Sheets Database Schema & Setup](#1-google-sheets-database-schema--setup)
+2. [Google Apps Script Deployment](#2-google-apps-script-deployment)
+3. [Manual Admin Entry & Direct Live Sync](#3-manual-admin-entry--direct-live-sync)
+4. [UTR Cross-Checking & Fraud Prevention](#4-utr-cross-checking--fraud-prevention)
+5. [Frontend Configuration (.env) & Vercel Deployment](#5-frontend-configuration-env--vercel-deployment)
 
 ---
 
-## 1. GOOGLE SHEETS & APPS SCRIPT SETUP
+## 1. GOOGLE SHEETS DATABASE SCHEMA & SETUP
 
-The system uses Google Sheets as a free database and Google Apps Script (`backend/Code.gs`) as the serverless REST API and automated email sender.
+The database consists of two tabs in a single Google Spreadsheet:
 
-### Step 1.1: Create Google Sheet
-1. Open [Google Sheets](https://sheets.new) in your browser.
-2. Title your spreadsheet: `RJ05 Esports - Tournament Database`.
-3. The script automatically initializes the tabs if they don't exist, but you can also create them manually:
-   - **Tab 1: `Bookings`**
-     - Column Headers: `Timestamp | Order ID | Exact Amount | Slot No | Player Name | Free Fire UID | Mobile | Email | Match Type | Status`
-   - **Tab 2: `Queries`**
-     - Column Headers: `Timestamp | Name | Free Fire UID | Contact | Issue Type | Message`
+### Tab 1: `Bookings`
+Columns (Row 1 Header):
+| Col | Header Name | Description |
+|---|---|---|
+| A | `Timestamp` | Date & time of registration |
+| B | `Order ID` | Unique ID e.g. `RJ05-847291-382` |
+| C | `Booking Type` | `Squad` (4 players) or `Solo` (1 player) |
+| D | `Exact Amount` | `100` or `25` |
+| E | `UTR Number` | 12-digit numeric UPI reference number |
+| F | `Slot No` | Auto-assigned: `SQUAD-SLOT-01` to `SQUAD-SLOT-12` |
+| G | `Squad / Team Name` | Team name or Solo player name |
+| H | `Player 1 Name & UID` | Leader Name + UID e.g. `VIPER (3029117867)` |
+| I | `Player 2 UID` | Teammate 2 Free Fire UID |
+| J | `Player 3 UID` | Teammate 3 Free Fire UID |
+| K | `Player 4 UID` | Teammate 4 Free Fire UID |
+| L | `Players Count` | `4` for squad, `1` for solo |
+| M | `Mobile` | 10-digit WhatsApp number |
+| N | `Email` | Email for HTML boarding pass receipt |
+| O | `Status` | `Confirmed` |
 
-### Step 1.2: Add Backend Code
-1. In the Google Sheet top menu, click **Extensions** > **Apps Script**.
-2. Rename the project to `RJ05 Esports Backend API`.
+### Tab 2: `Queries`
+Columns:
+`Timestamp | Name | Free Fire UID | Contact | Issue Type | Message`
+
+---
+
+## 2. GOOGLE APPS SCRIPT DEPLOYMENT
+
+1. Open your Google Spreadsheet.
+2. Click **Extensions** > **Apps Script**.
 3. Clear any existing code in `Code.gs`.
-4. Copy the entire contents of [`backend/Code.gs`](file:///c:/Users/hp/Downloads/free%20fire%20tournament/backend/Code.gs) and paste it into `Code.gs`.
-5. Click the **Save** floppy disk icon (or `Ctrl + S`).
-
-### Step 1.3: Deploy as Web App
-1. At the top right of Apps Script, click **Deploy** > **New deployment**.
-2. Select type: **Web app** (gear icon).
-3. Set the following options:
-   - **Description:** `RJ05 Esports API v1`
+4. Copy the entire contents of [`backend/Code.gs`](file:///c:/Users/hp/Downloads/free%20fire%20tournament/backend/Code.gs) into `Code.gs`.
+5. Click **Save** (`Ctrl + S`).
+6. Click **Deploy** > **New deployment**.
+7. Select type: **Web app** (gear icon).
+   - **Description:** `RJ05 Season 1 Production API`
    - **Execute as:** `Me (your-email@gmail.com)`
-   - **Who has access:** `Anyone` *(Crucial so players and MacroDroid can access without Google login)*
-4. Click **Deploy**.
-5. When prompted, click **Authorize Access**, select your Google account, click **Advanced**, and proceed to `RJ05 Esports Backend API (unsafe)`.
-6. Copy the generated **Web App URL** (format: `https://script.google.com/macros/s/AKfycb.../exec`).
+   - **Who has access:** `Anyone` *(Crucial so players can query live slots and submit bookings)*
+8. Click **Deploy**, authorize permissions with your Google Account.
+9. Copy your **Web App URL** (format: `https://script.google.com/macros/s/.../exec`).
 
 ---
 
-## 2. MACRODROID ZERO-FEE AUTO-VERIFICATION SETUP
+## 3. MANUAL ADMIN ENTRY & DIRECT LIVE SYNC
 
-MacroDroid runs on the organizer's Android device (where `8209071700@ybl` is active on PhonePe, Google Pay, Paytm, or BHIM). It automatically reads UPI incoming credit SMS/push notifications and calls the Google Apps Script webhook.
+The Google Apps Script `GET` endpoint and frontend telemetry bar read **all rows** where `Status` is `"Confirmed"` (case-insensitive).
 
-### How Dynamic Paise Matching Works:
-- When a player registers for Solo (Base ₹50), the portal assigns a unique paise amount (e.g., `₹50.14`).
-- The player scans the dynamic QR and pays exactly `₹50.14`.
-- When the bank or UPI app posts notification: `"Received Rs 50.14 from XYZ..."`, MacroDroid intercepts this notification and hits your Google Script URL.
-- The Google Script matches `50.14` with the pending order, marks it **CONFIRMED**, and instantly fires the HTML boarding pass email!
-
-### MacroDroid Configuration:
-1. Install **MacroDroid - Device Automation** from Google Play Store.
-2. Create a new Macro:
-   - **Name:** `RJ05 UPI Auto Verifier`
-3. **Trigger:**
-   - **Notification** > **Notification Received**
-   - Select your UPI apps (e.g., PhonePe, Google Pay, Paytm, or your Bank SMS app).
-   - Text Content: `Contains` -> `received` OR `credited` OR `INR` OR `Rs`.
-4. **Action:**
-   - **Web / HTTP Request**
-   - **URL:** `YOUR_GOOGLE_SCRIPT_WEB_APP_URL`
-   - **HTTP Method:** `POST`
-   - **Content-Type:** `application/json`
-   - **Request Body (JSON):**
-     ```json
-     {
-       "action": "payment_received",
-       "text": "[not_body]"
-     }
-     ```
-     *(Note: `[not_body]` is MacroDroid's built-in variable that holds the incoming notification text)*
-5. Turn the Macro **ON**.
+If an organizer receives payment offline or directly on WhatsApp, simply open the Google Sheet:
+1. Add a new row in the `Bookings` tab.
+2. Type in the Slot No (`SQUAD-SLOT-02`), Squad Name, Player UIDs, Mobile, and set `Status` = `Confirmed`.
+3. Set `Players Count` = `4` (or `1`).
+4. **Instantly:** The website's live slot counter, search bar, and confirmed roster will update on the next refresh!
 
 ---
 
-## 3. LOCAL DEVELOPMENT & ENVIRONMENT CONFIGURATION
+## 4. UTR CROSS-CHECKING & FRAUD PREVENTION
 
-### Step 3.1: Configure Environment Variables
-Open the `.env` file in the project root:
+- Every online entrant MUST input their **12-digit numeric UPI UTR / Reference Number** from their payment app receipt.
+- **Duplicate Prevention:** The backend checks column E (`UTR Number`). If the same UTR is submitted twice, it is rejected immediately.
+- **Verification:** Anirudh Singh can open his bank/UPI statement (`8209071700@ptsbi`), check the UTR against column E in Google Sheets, and verify the payment within seconds.
+
+---
+
+## 5. FRONTEND CONFIGURATION (.env) & VERCEL DEPLOYMENT
+
+### Step 5.1: Set `.env`
 ```env
-# Paste your deployed Google Apps Script URL here
 VITE_GOOGLE_SCRIPT_URL=https://script.google.com/macros/s/YOUR_ACTUAL_ID/exec
-
-# Organizer UPI Payment Information
-VITE_UPI_ID=8209071700@ybl
-VITE_PAYEE_NAME=RJ05 Esports - Anirudh Singh
-
-# Host Information
-VITE_ORGANIZER_NAME=Anirudh Singh
-VITE_ORGANIZER_UID=3029117867
-VITE_ORGANIZER_PHONE=+918209071700
-VITE_ORGANIZER_EMAIL=anirudhgunesh5@gmail.com
-VITE_ORGANIZER_INSTA=https://instagram.com/i.e_anirudh_rj05
+VITE_UPI_ID=8209071700@ptsbi
+VITE_PAYEE_NAME=Anirudh Singh
 ```
 
-> **Note:** If `VITE_GOOGLE_SCRIPT_URL` is empty, the application automatically runs in **Offline Demo Mode** with built-in instant payment simulation and realistic mock roster lookup.
-
-### Step 3.2: Run Locally
+### Step 5.2: Build & Preview
 ```bash
-# Start Vite development server
-npm run dev
-
-# Or build for production preview
 npm run build
 npm run preview
 ```
 
----
-
-## 4. DEPLOYING TO VERCEL
-
-### Option A: Deploy via Vercel CLI (Recommended)
-1. Install Vercel CLI globally if not installed:
-   ```bash
-   npm i -g vercel
-   ```
-2. In the project root, run:
-   ```bash
-   vercel
-   ```
-3. Follow the CLI prompts to link to your Vercel account.
-4. Set Environment Variables in your Vercel dashboard:
+### Step 5.3: Deploy to Vercel
+1. Import repository to [Vercel](https://vercel.com).
+2. Add environment variables:
    - `VITE_GOOGLE_SCRIPT_URL`
    - `VITE_UPI_ID`
    - `VITE_PAYEE_NAME`
-5. Deploy to production:
-   ```bash
-   vercel --prod
-   ```
-
-### Option B: Deploy via GitHub & Vercel Dashboard
-1. Push this repository to GitHub or GitLab.
-2. Log in to [Vercel](https://vercel.com).
-3. Click **Add New...** > **Project** and import your repository.
-4. Under **Environment Variables**, add:
-   - Key: `VITE_GOOGLE_SCRIPT_URL` | Value: Your Web App URL
-   - Key: `VITE_UPI_ID` | Value: `8209071700@ybl`
-   - Key: `VITE_PAYEE_NAME` | Value: `RJ05 Esports - Anirudh Singh`
-5. Click **Deploy**. Vercel will build and assign your production domain.
+3. Click **Deploy**. Vercel will build the SPA with the included `vercel.json` routing rules.
 
 ---
 
-## 5. TESTING & OPERATIONAL CHECKLIST
-
-1. **Verify Host UID:**
-   - Confirm official host UID `3029117867` displays properly across Hero, Cards, Footer, and Contact sections.
-2. **Audio Synthesizer:**
-   - Test mouse hover and button clicks. Click the speaker icon in the navbar to test mute/unmute.
-3. **Registration & Dynamic QR:**
-   - Submit a test registration (e.g., Solo ₹50).
-   - Check that Step 2 displays the exact paise amount (e.g., `₹50.42`) and generates a valid UPI QR code.
-   - Click **"I Have Paid / Verify Instantly"** to test the celebratory Booyah sound and confetti animation!
-4. **Live Search:**
-   - Search for `3029117867` or `SLOT-01` in the Live Roster search bar to test real-time filtering.
-5. **Support Form:**
-   - Fill out the support query in the Contact Section to verify it records into the `Queries` tab.
-6. **Mandatory Agency Credit:**
-   - Verify that the footer badge **"Designed & Developed by TK Web Solutions"** links directly to `https://tkwebsolutions.in/`.
-
----
-
-**Tournament Operations Support:** Anirudh Singh (`+91 8209071700` | `3029117867`)  
+**Tournament Operations Support:** Anirudh Singh (`+91 8209071700` | UID: `3029117867`)  
 **Portal Architecture:** [TK Web Solutions](https://tkwebsolutions.in/)

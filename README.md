@@ -1,58 +1,46 @@
-# 🎮 RJ05 ESPORTS — OFFICIAL TOURNAMENT PORTAL
+# 🎮 RJ05 ESPORTS — SEASON 1 TOURNAMENT (1ST MATCH)
 
-> High-stakes competitive Free Fire tournament portal featuring automated zero-fee UPI slot allocation, real-time player verification, iconic character meta loadouts, and instant room credential dispatch.
+> High-stakes competitive Free Fire Battle Royale tournament portal featuring 100% real-time Google Sheets sync, zero dummy/fake data, 12-digit UTR payment cross-checking, 3D tactical character meta loadouts, and verified host credentials.
 
-![RJ05 Esports](https://img.shields.io/badge/Organizer-Anirudh%20Singh-FF5500?style=for-the-badge)
-![Host UID](https://img.shields.io/badge/Host%20UID-3029117867-00F0FF?style=for-the-badge)
-![Tech Stack](https://img.shields.io/badge/React%2018-Vite%20%7C%20Tailwind%20CSS-FFAA00?style=for-the-badge)
-![Agency](https://img.shields.io/badge/Built%20By-TK%20Web%20Solutions-00FF66?style=for-the-badge&link=https://tkwebsolutions.in/)
-
----
-
-## ⚡ KEY CAPABILITIES
-
-- **🎮 Immersive Esports Aesthetic:** Deep obsidian matte finish (`#07090E`), glowing neon accents (Ember Orange `#FF5500`, Fire Gold `#FFAA00`, Electric Cyan `#00F0FF`), animated cyber grid, and custom Web Audio API synthesizer sound effects.
-- **🛡️ 100% Anti-Cheat Verified:** Mobile-only lobbies, official Host UID `3029117867`, and strict room verification before start.
-- **💸 Zero-Fee Dynamic UPI QR Automation:** Dynamic unique paise calculation (`₹50.01` - `₹50.99`), automated MacroDroid webhook integration, and real-time polling without gateway processing fees.
-- **🎯 3-Step Slot Booking Terminal:**
-  1. *Registration Form:* Validated IGN, FF UID, WhatsApp, and Combat Tier selection.
-  2. *Live UPI QR:* Dynamic paise amount, 1-tap mobile UPI intent, and real-time polling.
-  3. *Esports Boarding Pass:* Confirmed ticket with celebratory confetti, Booyah fanfare, and 1-click clipboard copy.
-- **🔍 Live Roster & Slot Directory:** Real-time search by Free Fire UID, IGN, or Slot ID (`SLOT-01`).
-- **🦹 Operative Meta Cards:** Interactive 3D tilt cards for Alok, Chrono, Kelly, and Wukong with full combat stats and sound triggers.
-- **🗺️ Battleground Maps:** Detailed terrain and prize distribution cards for Bermuda, Purgatory, and Alpine.
-- **🤝 Organizer Headquarters:** Direct WhatsApp, Instagram, Email, and 24/7 dispute query ticket system.
-- **🚀 Vercel Production Ready:** Includes `vercel.json` SPA routing, `.env.example`, and clean modular architecture.
-- **🌟 Agency Attribution:** Mandatory neon glow badge attributing design and development to [TK Web Solutions](https://tkwebsolutions.in/).
+![Tournament](https://img.shields.io/badge/Tournament-Season%201%20(1st%20Match)-FF5500?style=for-the-badge)
+![Date](https://img.shields.io/badge/Date-Sun%2029%20Nov%202026-FFAA00?style=for-the-badge)
+![Map](https://img.shields.io/badge/Map-Bermuda%20(Only)-00F0FF?style=for-the-badge)
+![Prize](https://img.shields.io/badge/1st%20Prize-%E2%82%B9600%20Cash-00FF66?style=for-the-badge)
+![Host](https://img.shields.io/badge/Host-ANIRUDH%E2%80%A2RJ05%20(3029117867)-FF2A55?style=for-the-badge)
+![Agency](https://img.shields.io/badge/Made%20By-TK%20Web%20Solutions-00F0FF?style=for-the-badge&link=https://tkwebsolutions.in/)
 
 ---
 
-## 🚀 QUICK START
+## ⚡ REAL TOURNAMENT SPECIFICATIONS
+
+- **Event:** RJ05 Esports — Season 1 Tournament (1st Match)
+- **Date:** Sunday, 29 November 2026
+- **Map:** Bermuda (Only)
+- **1st Prize:** ₹600 (Winning Squad)
+- **Capacity:** Strictly 12 Squads = 48 Players Maximum
+- **Entry Fee:** ₹25 per player (Solo) | ₹100 per Squad (4 players)
+- **Official Host:** Anirudh Singh (IGN: `ANIRUDH•RJ05`, Level 61, Guild `CEXPRIMER'S`, FF UID: `3029117867`)
+- **Official UPI:** `8209071700@ptsbi`
+- **Zero Fake Data:** 100% live telemetry from Google Sheets. Shows exact remaining slots and confirmed squads.
+- **Manual Sheet Entries:** Organizer manual entries in Google Sheets appear live immediately on the website!
+- **Mandatory Agency Badge:** Made by [TK Web Solutions](https://tkwebsolutions.in/)
+
+---
+
+## 🛠️ QUICK RUN & BUILD
 
 ```bash
-# 1. Install dependencies
+# Install dependencies
 npm install
 
-# 2. Configure environment
-cp .env.example .env
-
-# 3. Start development server
+# Start Vite live server
 npm run dev
-```
 
-Visit `http://localhost:3000` in your browser.
-
----
-
-## 📦 BUILD & VERIFY
-
-```bash
+# Build for production
 npm run build
 ```
 
-The output will be generated cleanly in `dist/`.
-
-For full Google Apps Script backend and MacroDroid phone automation instructions, see [SETUP_GUIDE.md](file:///c:/Users/hp/Downloads/free%20fire%20tournament/SETUP_GUIDE.md).
+Full backend deployment and Google Sheets setup instructions can be found in [SETUP_GUIDE.md](file:///c:/Users/hp/Downloads/free%20fire%20tournament/SETUP_GUIDE.md).
 
 ---
 

@@ -2,114 +2,163 @@
  * ============================================================================
  * RJ05 ESPORTS — OFFICIAL BACKEND API (Google Apps Script)
  * ============================================================================
- * Brand: RJ05 Esports
- * Organizer: Anirudh Singh (Official Free Fire UID: 3029117867)
- * WhatsApp: +91 8209071700
- * Email: anirudhgunesh5@gmail.com
- * UPI ID: 8209071700@ybl
+ * Tournament: Season 1 Tournament (1st Match)
+ * Match Date: Sunday, 29 November 2026 | Map: Bermuda | 1st Prize: ₹600
+ * Capacity: Exactly 12 Squads = 48 Players Maximum
+ * Organizer: Anirudh Singh (FF IGN: ANIRUDH•RJ05 | UID: 3029117867 | Guild: CEXPRIMER'S | Lv: 61)
+ * WhatsApp: +91 8209071700 | Email: anirudhgunesh5@gmail.com
+ * Official UPI ID: 8209071700@ptsbi
  * Developer: TK Web Solutions (https://tkwebsolutions.in/)
- * 
- * Instructions:
- * 1. Open Google Sheets -> Extensions -> Apps Script
- * 2. Paste this entire Code.gs code and save
- * 3. Deploy -> New Deployment -> Web app -> Execute as 'Me' -> Who has access: 'Anyone'
- * 4. Copy the Web App URL into your React .env (VITE_GOOGLE_SCRIPT_URL)
  * ============================================================================
  */
 
 const SHEET_BOOKINGS = 'Bookings';
 const SHEET_QUERIES = 'Queries';
-const HOST_NAME = 'Anirudh Singh';
-const HOST_UID = '3029117867';
-const HOST_PHONE = '+91 8209071700';
+const MAX_CAPACITY = 48; // 48 Players Total (12 Squads)
+const MAX_SQUADS = 12;
+
+const HEADERS_BOOKINGS = [
+  'Timestamp',
+  'Order ID',
+  'Booking Type',
+  'Exact Amount',
+  'UTR Number',
+  'Slot No',
+  'Squad / Team Name',
+  'Player 1 Name & UID',
+  'Player 2 UID',
+  'Player 3 UID',
+  'Player 4 UID',
+  'Players Count',
+  'Mobile',
+  'Email',
+  'Status'
+];
+
+const HEADERS_QUERIES = [
+  'Timestamp',
+  'Name',
+  'Free Fire UID',
+  'Contact',
+  'Issue Type',
+  'Message'
+];
 
 /**
  * Handle incoming GET requests:
- * - ?action=list : Fetch all confirmed/pending bookings for live directory
- * - ?action=check_order&orderId=... : Poll order payment status
- * - ?action=search_uid&uid=... : Look up player by Free Fire UID
+ * - ?action=stats : Live telemetry counter (Confirmed players, remaining, squads filled)
+ * - ?action=list : Read all confirmed rows (works for both online bookings and manual admin entries!)
+ * - ?action=search&q=... : Real-time search across UID, Team Name, Slot No, Order ID, UTR
  */
 function doGet(e) {
   try {
     const params = e.parameter || {};
-    const action = params.action;
+    const action = params.action || 'stats';
     const ss = SpreadsheetApp.getActiveSpreadsheet();
-    const sheet = getOrCreateSheet(ss, SHEET_BOOKINGS, [
-      'Timestamp', 'Order ID', 'Exact Amount', 'Slot No', 'Player Name', 
-      'Free Fire UID', 'Mobile', 'Email', 'Match Type', 'Status'
-    ]);
+    const sheet = getOrCreateSheet(ss, SHEET_BOOKINGS, HEADERS_BOOKINGS);
+    const data = sheet.getDataRange().getValues();
 
-    // 1. Fetch Roster List
+    // Parse all confirmed bookings (Row 1 is headers)
+    const confirmedBookings = [];
+    let totalConfirmedPlayers = 0;
+
+    for (let i = 1; i < data.length; i++) {
+      const row = data[i];
+      const status = String(row[14] || '').trim().toLowerCase();
+
+      // STRICT LIVE SYNC: Any row where status is "confirmed" (case-insensitive)
+      // Supports both web bookings and manual admin entries!
+      if (status === 'confirmed') {
+        const count = parseInt(row[11]) || (String(row[2]).toLowerCase().includes('squad') ? 4 : 1);
+        totalConfirmedPlayers += count;
+
+        confirmedBookings.push({
+          rowId: i + 1,
+          timestamp: formatTimestamp(row[0]),
+          orderId: String(row[1] || 'OFFLINE-' + i),
+          bookingType: String(row[2] || (count === 4 ? 'Squad' : 'Solo')),
+          amount: parseFloat(row[3]) || (count === 4 ? 100 : 25),
+          utr: String(row[4] || 'N/A'),
+          slotNo: String(row[5] || ('SLOT-' + String(confirmedBookings.length + 1).padStart(2, '0'))),
+          teamName: String(row[6] || (row[7] ? String(row[7]).split('-')[0] : 'Squad ' + i)),
+          player1: String(row[7] || ''),
+          player2: String(row[8] || ''),
+          player3: String(row[9] || ''),
+          player4: String(row[10] || ''),
+          playersCount: count,
+          mobile: maskMobile(String(row[12] || '')),
+          status: 'Confirmed'
+        });
+      }
+    }
+
+    // 1. Live Telemetry Stats
+    if (action === 'stats') {
+      const remaining = Math.max(0, MAX_CAPACITY - totalConfirmedPlayers);
+      const squadsFilled = Math.min(MAX_SQUADS, Math.floor(totalConfirmedPlayers / 4));
+
+      return jsonResponse({
+        success: true,
+        confirmedPlayers: totalConfirmedPlayers,
+        maxCapacity: MAX_CAPACITY,
+        remainingPlayers: remaining,
+        confirmedSquads: squadsFilled,
+        maxSquads: MAX_SQUADS,
+        isFull: remaining <= 0,
+        tournament: 'RJ05 Esports — Season 1 Tournament (1st Match)',
+        date: 'Sunday, 29 November 2026',
+        map: 'Bermuda',
+        firstPrize: '₹600'
+      });
+    }
+
+    // 2. Confirmed Roster Directory List
     if (action === 'list') {
-      const data = sheet.getDataRange().getValues();
-      const roster = [];
-      for (let i = 1; i < data.length; i++) {
-        const row = data[i];
-        if (row[1]) { // If Order ID exists
-          roster.push({
-            orderId: row[1],
-            amount: row[2],
-            slotNo: row[3] || ('SLOT-' + i),
-            ign: row[4] || 'Player',
-            uid: String(row[5] || ''),
-            mobile: row[6],
-            email: row[7],
-            mode: row[8] || 'Solo',
-            status: row[9] || 'CONFIRMED',
-            time: formatTime(row[0])
-          });
-        }
-      }
-      return jsonResponse({ success: true, count: roster.length, roster: roster.reverse() });
+      return jsonResponse({
+        success: true,
+        count: confirmedBookings.length,
+        totalPlayers: totalConfirmedPlayers,
+        remainingSlots: Math.max(0, MAX_CAPACITY - totalConfirmedPlayers),
+        roster: confirmedBookings.reverse() // Newest entries first
+      });
     }
 
-    // 2. Poll Order Status
-    const orderId = params.orderId;
-    if (action === 'check_order' || orderId) {
-      const data = sheet.getDataRange().getValues();
-      for (let i = 1; i < data.length; i++) {
-        if (data[i][1] == orderId) {
-          return jsonResponse({
-            success: true,
-            orderId: data[i][1],
-            exactAmount: data[i][2],
-            slotNo: data[i][3],
-            ign: data[i][4],
-            uid: String(data[i][5]),
-            status: data[i][9] || 'PENDING'
-          });
-        }
+    // 3. Real-time Search Lookup
+    if (action === 'search' || params.q) {
+      const query = String(params.q || '').trim().toLowerCase();
+      if (!query) {
+        return jsonResponse({ success: true, count: confirmedBookings.length, results: confirmedBookings });
       }
-      return jsonResponse({ success: false, status: 'NOT_FOUND', orderId: orderId });
+
+      const results = confirmedBookings.filter(b => {
+        return (
+          b.slotNo.toLowerCase().includes(query) ||
+          b.teamName.toLowerCase().includes(query) ||
+          b.orderId.toLowerCase().includes(query) ||
+          b.utr.toLowerCase().includes(query) ||
+          b.player1.toLowerCase().includes(query) ||
+          b.player2.toLowerCase().includes(query) ||
+          b.player3.toLowerCase().includes(query) ||
+          b.player4.toLowerCase().includes(query)
+        );
+      });
+
+      return jsonResponse({
+        success: true,
+        query: query,
+        count: results.length,
+        results: results
+      });
     }
 
-    // 3. Search by Free Fire UID
-    const uid = params.uid;
-    if (action === 'search_uid' || uid) {
-      const data = sheet.getDataRange().getValues();
-      const results = [];
-      for (let i = 1; i < data.length; i++) {
-        if (String(data[i][5]).trim() === String(uid).trim()) {
-          results.push({
-            orderId: data[i][1],
-            slotNo: data[i][3],
-            ign: data[i][4],
-            uid: data[i][5],
-            mode: data[i][8],
-            status: data[i][9]
-          });
-        }
-      }
-      return jsonResponse({ success: true, found: results.length > 0, results: results });
-    }
-
-    // Default health ping
+    // Default API Info
     return jsonResponse({
       status: 'ONLINE',
-      service: 'RJ05 Esports API',
-      organizer: HOST_NAME,
-      hostUid: HOST_UID,
-      timestamp: new Date().toISOString()
+      api: 'RJ05 Esports Season 1 Automated API',
+      organizer: 'Anirudh Singh',
+      hostUid: '3029117867',
+      totalConfirmed: totalConfirmedPlayers,
+      remaining: Math.max(0, MAX_CAPACITY - totalConfirmedPlayers)
     });
 
   } catch (err) {
@@ -119,9 +168,8 @@ function doGet(e) {
 
 /**
  * Handle incoming POST requests:
- * - action: "create_order" (New registration)
- * - action: "payment_received" (MacroDroid automated UPI webhook)
- * - action: "contact_query" (Support & query logging)
+ * - action: "create_booking" / "create_order"
+ * - action: "contact_query"
  */
 function doPost(e) {
   try {
@@ -136,137 +184,151 @@ function doPost(e) {
       payload = e.parameter || {};
     }
 
-    const action = payload.action;
+    const action = payload.action || 'create_booking';
     const ss = SpreadsheetApp.getActiveSpreadsheet();
 
     // =========================================================================
-    // CASE 1: CREATE ORDER
+    // ACTION: CREATE BOOKING WITH 12-DIGIT UTR CROSS-CHECK
     // =========================================================================
-    if (action === 'create_order') {
-      const sheet = getOrCreateSheet(ss, SHEET_BOOKINGS, [
-        'Timestamp', 'Order ID', 'Exact Amount', 'Slot No', 'Player Name', 
-        'Free Fire UID', 'Mobile', 'Email', 'Match Type', 'Status'
-      ]);
-
-      const timestamp = new Date();
-      const orderId = payload.orderId || ('RJ05-' + Date.now().toString().slice(-6));
-      const exactAmount = parseFloat(payload.exactAmount) || 50.00;
-      const slotNo = payload.slotNo || ('SLOT-' + (sheet.getLastRow()));
-      const ign = payload.ign || payload.name || 'Anonymous';
-      const uid = String(payload.uid || '');
-      const mobile = String(payload.mobile || '');
-      const email = payload.email || '';
-      const matchMode = payload.matchMode || 'Solo';
-      const status = 'PENDING';
-
-      sheet.appendRow([
-        timestamp, orderId, exactAmount, slotNo, ign, uid, mobile, email, matchMode, status
-      ]);
-
-      return jsonResponse({
-        success: true,
-        orderId: orderId,
-        exactAmount: exactAmount,
-        slotNo: slotNo,
-        status: status
-      });
-    }
-
-    // =========================================================================
-    // CASE 2: PAYMENT RECEIVED (MacroDroid Webhook)
-    // =========================================================================
-    if (action === 'payment_received') {
-      const sheet = getOrCreateSheet(ss, SHEET_BOOKINGS, [
-        'Timestamp', 'Order ID', 'Exact Amount', 'Slot No', 'Player Name', 
-        'Free Fire UID', 'Mobile', 'Email', 'Match Type', 'Status'
-      ]);
-
-      let receivedAmt = null;
-
-      // Extract amount either directly or via notification body regex
-      if (payload.amount) {
-        receivedAmt = parseFloat(payload.amount);
-      } else if (payload.body || payload.text) {
-        const text = payload.body || payload.text;
-        // Regex for UPI notification: e.g. "credited by Rs 50.01" or "Rs.50.02 received"
-        const match = text.match(/(?:Rs\.?|INR|₹)\s*([\d]+\.[\d]{2})/i);
-        if (match && match[1]) {
-          receivedAmt = parseFloat(match[1]);
-        }
-      }
-
-      if (!receivedAmt) {
-        return jsonResponse({ success: false, message: 'Could not extract exact paise amount from payload' });
-      }
-
+    if (action === 'create_booking' || action === 'create_order') {
+      const sheet = getOrCreateSheet(ss, SHEET_BOOKINGS, HEADERS_BOOKINGS);
       const data = sheet.getDataRange().getValues();
-      let matchedIndex = -1;
-      let matchedBooking = null;
 
-      // Search bottom-up for fastest matching of recent pending orders
-      for (let i = data.length - 1; i >= 1; i--) {
-        const rowAmt = parseFloat(data[i][2]);
-        const rowStatus = String(data[i][9]).toUpperCase();
+      const bookingType = payload.bookingType || 'Squad'; // 'Squad' (4) or 'Solo' (1)
+      const requestedPlayers = bookingType === 'Squad' ? 4 : 1;
+      const utrNumber = String(payload.utrNumber || '').trim();
 
-        if (Math.abs(rowAmt - receivedAmt) < 0.005 && rowStatus === 'PENDING') {
-          matchedIndex = i + 1; // 1-based index for Google Sheets
-          matchedBooking = {
-            orderId: data[i][1],
-            exactAmount: data[i][2],
-            slotNo: data[i][3],
-            ign: data[i][4],
-            uid: data[i][5],
-            mobile: data[i][6],
-            email: data[i][7],
-            matchMode: data[i][8]
-          };
-          break;
+      // 1. Mandatory 12-digit UTR validation
+      if (!/^\d{12}$/.test(utrNumber)) {
+        return jsonResponse({
+          success: false,
+          error: 'INVALID_UTR',
+          message: 'A valid 12-digit numeric UPI UTR / Reference Number is strictly required.'
+        });
+      }
+
+      // 2. Duplicate UTR Check
+      let currentConfirmedPlayers = 0;
+      let lastSquadIndex = 0;
+
+      for (let i = 1; i < data.length; i++) {
+        const rowUtr = String(data[i][4] || '').trim();
+        const rowStatus = String(data[i][14] || '').trim().toLowerCase();
+        const rowCount = parseInt(data[i][11]) || (String(data[i][2]).toLowerCase().includes('squad') ? 4 : 1);
+
+        if (rowStatus === 'confirmed') {
+          currentConfirmedPlayers += rowCount;
+          if (String(data[i][2]).toLowerCase().includes('squad')) {
+            lastSquadIndex++;
+          }
+        }
+
+        if (rowUtr && rowUtr === utrNumber) {
+          return jsonResponse({
+            success: false,
+            error: 'DUPLICATE_UTR',
+            message: 'This 12-digit UTR number (' + utrNumber + ') has already been submitted. If this is an error, please contact organizer Anirudh Singh on WhatsApp (+91 8209071700).'
+          });
         }
       }
 
-      if (matchedIndex !== -1 && matchedBooking) {
-        // Mark status as CONFIRMED in Column J (10th column)
-        sheet.getRange(matchedIndex, 10).setValue('CONFIRMED');
-
-        // Send automated confirmation email with HTML Boarding Pass
-        if (matchedBooking.email && matchedBooking.email.includes('@')) {
-          sendConfirmationEmail(matchedBooking);
-        }
-
+      // 3. Slot Capacity Check
+      if (currentConfirmedPlayers + requestedPlayers > MAX_CAPACITY) {
         return jsonResponse({
-          success: true,
-          verified: true,
-          slotNo: matchedBooking.slotNo,
-          orderId: matchedBooking.orderId,
-          ign: matchedBooking.ign,
-          uid: matchedBooking.uid
+          success: false,
+          error: 'SLOTS_FULL',
+          message: 'Only ' + Math.max(0, MAX_CAPACITY - currentConfirmedPlayers) + ' player slot(s) remaining. Cannot book ' + requestedPlayers + ' player(s).'
+        });
+      }
+
+      // 4. Generate Order ID and Slot Number
+      const orderId = payload.orderId || ('RJ05-' + Date.now().toString().slice(-6) + '-' + Math.floor(100 + Math.random() * 900));
+      let slotNo = '';
+      if (bookingType === 'Squad') {
+        const nextSquadNo = lastSquadIndex + 1;
+        slotNo = 'SQUAD-SLOT-' + String(nextSquadNo).padStart(2, '0');
+      } else {
+        slotNo = 'SOLO-SLOT-' + String(currentConfirmedPlayers + 1).padStart(2, '0');
+      }
+
+      const teamName = payload.teamName || (bookingType === 'Squad' ? 'Team ' + payload.player1Name : payload.player1Name);
+      const player1 = payload.player1Name + ' (UID: ' + payload.player1Uid + ')';
+      const player2 = payload.player2Uid ? 'UID: ' + payload.player2Uid : 'N/A';
+      const player3 = payload.player3Uid ? 'UID: ' + payload.player3Uid : 'N/A';
+      const player4 = payload.player4Uid ? 'UID: ' + payload.player4Uid : 'N/A';
+      const amount = bookingType === 'Squad' ? 100 : 25;
+      const mobile = String(payload.mobile || '').trim();
+      const email = String(payload.email || '').trim();
+      const status = 'Confirmed'; // Instantly confirmed upon UTR submission
+
+      // 5. Append to Google Sheet
+      sheet.appendRow([
+        new Date(),
+        orderId,
+        bookingType,
+        amount,
+        utrNumber,
+        slotNo,
+        teamName,
+        player1,
+        player2,
+        player3,
+        player4,
+        requestedPlayers,
+        mobile,
+        email,
+        status
+      ]);
+
+      // 6. Send Automated HTML Confirmation Email
+      if (email && email.includes('@')) {
+        sendTournamentConfirmationEmail({
+          email: email,
+          slotNo: slotNo,
+          teamName: teamName,
+          orderId: orderId,
+          utr: utrNumber,
+          bookingType: bookingType,
+          amount: amount,
+          player1: player1,
+          player2: player2,
+          player3: player3,
+          player4: player4,
+          mobile: mobile
         });
       }
 
       return jsonResponse({
-        success: false,
-        message: 'No matching pending order found for exact amount: ' + receivedAmt
+        success: true,
+        orderId: orderId,
+        slotNo: slotNo,
+        bookingType: bookingType,
+        amount: amount,
+        utr: utrNumber,
+        teamName: teamName,
+        status: status,
+        remainingPlayers: Math.max(0, MAX_CAPACITY - (currentConfirmedPlayers + requestedPlayers))
       });
     }
 
     // =========================================================================
-    // CASE 3: CONTACT QUERY (Queries Tab)
+    // ACTION: CONTACT / SUPPORT QUERY
     // =========================================================================
     if (action === 'contact_query') {
-      const sheet = getOrCreateSheet(ss, SHEET_QUERIES, [
-        'Timestamp', 'Name', 'Free Fire UID', 'Contact', 'Issue Type', 'Message'
-      ]);
-
+      const sheet = getOrCreateSheet(ss, SHEET_QUERIES, HEADERS_QUERIES);
       sheet.appendRow([
         new Date(),
         payload.name || 'Anonymous',
         payload.uid || 'N/A',
         payload.contact || 'N/A',
-        payload.issueType || 'General',
+        payload.issueType || 'General Inquiry',
         payload.message || ''
       ]);
 
-      return jsonResponse({ success: true, message: 'Query recorded successfully' });
+      return jsonResponse({
+        success: true,
+        message: 'Your query has been logged to Anirudh Singh\'s organizer desk.'
+      });
     }
 
     return jsonResponse({ success: false, message: 'Unrecognized action: ' + action });
@@ -277,73 +339,122 @@ function doPost(e) {
 }
 
 /**
- * Send Professional HTML Esports Boarding Pass via MailApp
+ * Send Cyberpunk Free Fire Esports HTML Confirmation Pass via MailApp
  */
-function sendConfirmationEmail(booking) {
+function sendTournamentConfirmationEmail(data) {
   try {
-    const subject = `[RJ05 ESPORTS] Confirmed Tournament Slot Pass: ${booking.slotNo} (${booking.ign})`;
+    const subject = `[RJ05 ESPORTS] Confirmed Entry Pass: ${data.slotNo} (${data.teamName})`;
     const htmlBody = `
-      <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #07090E; color: #FFFFFF; padding: 30px; border-radius: 16px; max-width: 600px; margin: auto; border: 1px solid #FF5500;">
-        <div style="text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 20px;">
-          <h1 style="color: #FF5500; font-size: 26px; margin: 0; letter-spacing: 2px;">RJ05 ESPORTS</h1>
-          <p style="color: #FFAA00; font-size: 13px; margin: 4px 0 0 0; text-transform: uppercase; font-weight: bold;">Official Tournament Boarding Pass</p>
+      <div style="font-family: 'Segoe UI', Arial, sans-serif; background-color: #07090E; color: #FFFFFF; padding: 32px 24px; border-radius: 16px; max-width: 620px; margin: auto; border: 2px solid #FF5500;">
+        <div style="text-align: center; border-bottom: 1px solid rgba(255,85,0,0.3); padding-bottom: 20px;">
+          <h1 style="color: #FF5500; font-size: 28px; margin: 0; letter-spacing: 2px; font-weight: 900;">RJ05 ESPORTS</h1>
+          <p style="color: #FFAA00; font-size: 14px; margin: 4px 0 0 0; text-transform: uppercase; font-weight: bold; letter-spacing: 1px;">
+            Season 1 Tournament (1st Match) • Official Boarding Pass
+          </p>
         </div>
 
-        <div style="text-align: center; margin: 25px 0; background: rgba(0, 255, 102, 0.1); border: 1px solid #00FF66; padding: 15px; border-radius: 12px;">
-          <span style="font-size: 12px; color: #00FF66; text-transform: uppercase; font-weight: bold;">Officially Reserved Slot</span>
-          <div style="font-size: 36px; font-weight: 900; color: #FFFFFF; letter-spacing: 2px;">${booking.slotNo}</div>
+        <div style="text-align: center; margin: 24px 0; background: rgba(0, 255, 102, 0.08); border: 1.5px solid #00FF66; padding: 18px; border-radius: 12px;">
+          <span style="font-size: 11px; color: #00FF66; text-transform: uppercase; font-weight: 800; letter-spacing: 2px;">RESERVED SEAT ALLOCATION</span>
+          <div style="font-size: 34px; font-weight: 900; color: #FFFFFF; letter-spacing: 3px; margin-top: 4px;">${data.slotNo}</div>
+          <span style="display: inline-block; margin-top: 6px; padding: 3px 10px; background: rgba(255,170,0,0.2); color: #FFAA00; border-radius: 20px; font-size: 12px; font-weight: bold;">
+            ${data.teamName} (${data.bookingType})
+          </span>
         </div>
 
-        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px;">
-          <tr style="border-bottom: 1px solid rgba(255,255,255,0.06);">
-            <td style="padding: 10px; color: #8892b0;">Player IGN:</td>
-            <td style="padding: 10px; color: #FFFFFF; font-weight: bold; text-align: right;">${booking.ign}</td>
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 13px;">
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.08);">
+            <td style="padding: 10px 0; color: #94A3B8;">Match Date:</td>
+            <td style="padding: 10px 0; color: #FFFFFF; font-weight: bold; text-align: right;">Sunday, 29 November 2026</td>
           </tr>
-          <tr style="border-bottom: 1px solid rgba(255,255,255,0.06);">
-            <td style="padding: 10px; color: #8892b0;">Free Fire UID:</td>
-            <td style="padding: 10px; color: #00F0FF; font-weight: bold; font-family: monospace; text-align: right;">${booking.uid}</td>
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.08);">
+            <td style="padding: 10px 0; color: #94A3B8;">Battleground Map:</td>
+            <td style="padding: 10px 0; color: #00F0FF; font-weight: bold; text-align: right;">Bermuda</td>
           </tr>
-          <tr style="border-bottom: 1px solid rgba(255,255,255,0.06);">
-            <td style="padding: 10px; color: #8892b0;">Category:</td>
-            <td style="padding: 10px; color: #FFAA00; font-weight: bold; text-align: right;">${booking.matchMode} Tier</td>
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.08);">
+            <td style="padding: 10px 0; color: #94A3B8;">1st Prize (Booyah):</td>
+            <td style="padding: 10px 0; color: #FFAA00; font-weight: bold; text-align: right;">₹600 Cash</td>
           </tr>
-          <tr style="border-bottom: 1px solid rgba(255,255,255,0.06);">
-            <td style="padding: 10px; color: #8892b0;">Order ID:</td>
-            <td style="padding: 10px; color: #FFFFFF; font-family: monospace; text-align: right;">${booking.orderId}</td>
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.08);">
+            <td style="padding: 10px 0; color: #94A3B8;">Leader / Player 1:</td>
+            <td style="padding: 10px 0; color: #FFFFFF; font-weight: bold; text-align: right;">${data.player1}</td>
+          </tr>
+          ${data.player2 !== 'N/A' ? `
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.08);">
+            <td style="padding: 10px 0; color: #94A3B8;">Player 2 UID:</td>
+            <td style="padding: 10px 0; color: #00F0FF; font-family: monospace; text-align: right;">${data.player2}</td>
+          </tr>` : ''}
+          ${data.player3 !== 'N/A' ? `
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.08);">
+            <td style="padding: 10px 0; color: #94A3B8;">Player 3 UID:</td>
+            <td style="padding: 10px 0; color: #00F0FF; font-family: monospace; text-align: right;">${data.player3}</td>
+          </tr>` : ''}
+          ${data.player4 !== 'N/A' ? `
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.08);">
+            <td style="padding: 10px 0; color: #94A3B8;">Player 4 UID:</td>
+            <td style="padding: 10px 0; color: #00F0FF; font-family: monospace; text-align: right;">${data.player4}</td>
+          </tr>` : ''}
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.08);">
+            <td style="padding: 10px 0; color: #94A3B8;">Order ID:</td>
+            <td style="padding: 10px 0; color: #FFFFFF; font-family: monospace; text-align: right;">${data.orderId}</td>
+          </tr>
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.08);">
+            <td style="padding: 10px 0; color: #94A3B8;">Verified 12-Digit UTR:</td>
+            <td style="padding: 10px 0; color: #00FF66; font-family: monospace; font-weight: bold; text-align: right;">${data.utr}</td>
           </tr>
           <tr>
-            <td style="padding: 10px; color: #8892b0;">Status:</td>
-            <td style="padding: 10px; color: #00FF66; font-weight: bold; text-align: right;">VERIFIED & ACTIVE</td>
+            <td style="padding: 10px 0; color: #94A3B8;">Entry Status:</td>
+            <td style="padding: 10px 0; color: #00FF66; font-weight: bold; text-align: right;">CONFIRMED (₹${data.amount})</td>
           </tr>
         </table>
 
-        <div style="background-color: #101522; padding: 15px; border-radius: 10px; font-size: 12px; color: #A0AEC0; line-height: 1.6;">
-          <strong style="color: #FFFFFF;">CRITICAL PROTOCOLS:</strong><br/>
-          • Room ID and password will be sent to your WhatsApp number (${booking.mobile}) 15 minutes before match kickoff.<br/>
-          • Join the room ONLY under your registered UID (${booking.uid}). All other entrants will be kicked by host.<br/>
-          • Tournament Host: <strong>${HOST_NAME}</strong> (Official UID: <span style="color:#00F0FF;">${HOST_UID}</span>)
+        <div style="background-color: #101522; padding: 16px; border-radius: 10px; font-size: 12px; color: #CBD5E1; line-height: 1.6; border-left: 3px solid #00F0FF;">
+          <strong style="color: #00F0FF;">MANDATORY MATCH INSTRUCTIONS:</strong><br/>
+          • Custom Room ID & Password will be delivered directly to your registered WhatsApp (${data.mobile}) 15 minutes before the match.<br/>
+          • All squad members must join strictly under their registered Free Fire UIDs. Unregistered UIDs will be kicked by the host before start.<br/>
+          • Official Host: <strong>Anirudh Singh</strong> (In-Game: <code style="color:#FFAA00;">ANIRUDH•RJ05</code> | FF UID: <code style="color:#00F0FF;">3029117867</code> | Level: 61 | Guild: CEXPRIMER'S)
         </div>
 
-        <div style="text-align: center; margin-top: 25px; font-size: 11px; color: #718096; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;">
-          RJ05 Esports • WhatsApp: ${HOST_PHONE}<br/>
-          Designed & Developed by <a href="https://tkwebsolutions.in/" style="color: #00F0FF; text-decoration: none;">TK Web Solutions</a>
+        <div style="text-align: center; margin-top: 24px; font-size: 11px; color: #64748B; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 16px;">
+          RJ05 Esports • WhatsApp Support: +91 8209071700<br/>
+          Designed & Developed by <a href="https://tkwebsolutions.in/" style="color: #00F0FF; text-decoration: none; font-weight: bold;">TK Web Solutions</a>
         </div>
       </div>
     `;
 
     MailApp.sendEmail({
-      to: booking.email,
+      to: data.email,
+      name: 'RJ05 Esports - Anirudh Singh',
+      replyTo: 'anirudhgunesh5@gmail.com',
       subject: subject,
       htmlBody: htmlBody
     });
-  } catch (e) {
-    Logger.log('Could not send confirmation email: ' + e.toString());
+  } catch (err) {
+    Logger.log('Error sending email: ' + err.toString());
   }
 }
 
 /**
- * Helper to retrieve or create a specific Sheet with headers
+ * Mask mobile number for public safety in directory
  */
+function maskMobile(m) {
+  if (!m || m.length < 6) return 'Hidden';
+  const clean = m.replace(/\D/g, '');
+  if (clean.length === 10) {
+    return clean.slice(0, 3) + '••••' + clean.slice(7);
+  }
+  return 'Registered';
+}
+
+function formatTimestamp(t) {
+  if (!t) return 'Today';
+  try {
+    const d = new Date(t);
+    return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short' }) + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  } catch (e) {
+    return 'Today';
+  }
+}
+
 function getOrCreateSheet(ss, sheetName, headers) {
   let sheet = ss.getSheetByName(sheetName);
   if (!sheet) {
@@ -355,23 +466,7 @@ function getOrCreateSheet(ss, sheetName, headers) {
   return sheet;
 }
 
-/**
- * Helper to return standard CORS-friendly JSON responses
- */
 function jsonResponse(data) {
   return ContentService.createTextOutput(JSON.stringify(data))
     .setMimeType(ContentService.MimeType.JSON);
-}
-
-/**
- * Helper to format readable time
- */
-function formatTime(val) {
-  if (!val) return 'Today';
-  try {
-    const d = new Date(val);
-    return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  } catch (e) {
-    return 'Today';
-  }
 }
