@@ -1,0 +1,57 @@
+# PROJECT SPECIFICATION: RJ05 ESPORTS — FULL GAMING EXPERIENCE & AUTOMATED TOURNAMENT PORTAL (REACT.JS + VITE + VERCEL)
+
+## 1. TECH STACK & BRANDING
+- **Frontend:** React.js (Vite) + Tailwind CSS + Lucide React Icons (`lucide-react`) + Framer Motion (`framer-motion`) for gaming animations & card hover effects
+- **Hosting:** Vercel (with `.env` environment variables and `vercel.json`)
+- **Backend & Database:** Google Apps Script Web App (`backend/Code.gs`) + Google Sheets + Automated HTML Confirmation Emails (`MailApp`)
+- **Zero-Fee Payment Verification:** Dynamic UPI QR (`upi://pay`) + unique paise generator (`₹50.01`, `₹50.02`) + MacroDroid Android notification auto-verifier
+- **Tournament Brand:** RJ05 Esports
+- **Organizer Details:**
+  - **Name:** Anirudh Singh
+  - **Official Free Fire UID:** `3029117867`
+  - **WhatsApp / Mobile:** `+91 8209071700`
+  - **Email:** `anirudhgunesh5@gmail.com`
+  - **Instagram:** `@i.e_anirudh_rj05` (`https://instagram.com/i.e_anirudh_rj05`)
+  - **UPI ID:** `8209071700@ybl` (via `VITE_UPI_ID`)
+- **Agency Credit (Mandatory Footer Badge):**
+  - Include a sleek, clickable developer credit in the footer: **"Designed & Developed by TK Web Solutions"** linking to `https://tkwebsolutions.in/` with a subtle neon glow badge.
+
+---
+
+## 2. FOLDER & FILE STRUCTURE TO GENERATE
+1. `package.json` (`react`, `react-dom`, `lucide-react`, `framer-motion`, `tailwindcss`, `vite`)
+2. `vercel.json` (SPA fallback routing)
+3. `.env.example` (`VITE_GOOGLE_SCRIPT_URL`, `VITE_UPI_ID`, `VITE_PAYEE_NAME`)
+4. `index.html` (Google Fonts: `Orbitron` & `Poppins`, gaming page title & favicon)
+5. `src/App.jsx` (Complete multi-section esports portal)
+6. `src/components/Navbar.jsx` (Sticky glassmorphic navbar with `RJ05 ESPORTS` logo, live green pulse `⚡ Auto-Verify Active`, smooth section links, and quick **Search Slot / UID** button)
+7. `src/components/HeroArena.jsx` (Full-screen dark gaming hero with animated cyber grid background, *"DROP. SURVIVE. CLAIM THE BOOYAH!"* headline, live countdown timer, prize pool banner, and quick stats: Map `Bermuda / Purgatory`, Entry `₹50 / ₹100 / ₹200`, Host UID `3029117867`)
+8. `src/components/AboutAndCharacterCards.jsx` (**Immersive Gaming Experience Section**):
+   - **About Tournament Arena:** Pro-esports overview explaining fair play, anti-hack strict UID verification, instant room ID delivery, and fast prize payout.
+   - **Character & Role Collection Cards (3D Tilt / Neon Glow Hover Cards):**
+     - Interactive character cards featuring iconic Free Fire archetypes (e.g., **Alok — Drop The Beat / Support**, **Chrono — Time Turner / Rusher**, **Kelly — Deadly Velocity / Flanker**, **Wukong — Camouflage / Stealth**) with stylized dark gaming character artwork/SVG illustrations, role badges, skill stats bars, and click-to-toggle subtle Web Audio API cyber hover/click sound effects (with a Mute/Unmute toggle in the corner).
+   - **Battleground Maps & Mode Cards:** Interactive cards for **Bermuda**, **Purgatory**, and **Alpine** showing terrain info, max slots (`48 Players`), and prize distribution (1st Booyah, 2nd Runner-Up, Per Kill reward).
+9. `src/components/LiveSearchAndRoster.jsx` (**Live Search & Verified Player Lookup**):
+   - Real-time search bar where players or admins can search by **Free Fire UID**, **Player IGN**, or **Slot Number** (`SLOT-01`, etc.) to instantly verify if a seat is `CONFIRMED` or `PENDING`, plus a live list of confirmed players fetched from `GET VITE_GOOGLE_SCRIPT_URL?action=list`.
+10. `src/components/BookingTerminal.jsx` (**3-Step Automated Slot Booking & Payment System**):
+    - **Step 1 (Registration Form):** In-Game Name (IGN), Free Fire UID (numeric validation), 10-digit WhatsApp Number, interactive Match Mode cards (`Solo ₹50`, `Duo ₹100`, `Squad ₹200`), and Email ID. Sends `POST` (`action: "create_order"`) to Google Apps Script.
+    - **Step 2 (Dynamic UPI QR & Auto-Polling):** Displays `Order ID` and exact paise amount (e.g., `₹50.01`), generates live QR code (`https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=...`), provides 1-tap `upi://pay` button for GPay/PhonePe/Paytm, and polls `GET VITE_GOOGLE_SCRIPT_URL?orderId=...` every 3 seconds.
+    - **Step 3 (Confirmed Esports Boarding Pass):** Displays glowing green tournament pass with `Slot Number`, `Player IGN`, `Free Fire UID`, `Match Mode`, and a button to copy/save ticket details.
+11. `src/components/ContactSection.jsx` (**Organizer Card + Interactive Contact & Support Form**):
+    - Left column: Verified Organizer Profile Card for **Anirudh Singh** (`FF UID: 3029117867`, clickable WhatsApp `+91 8209071700`, Email `anirudhgunesh5@gmail.com`, Instagram `@i.e_anirudh_rj05`).
+    - Right column: Interactive **Contact / Query Form** (Name, Free Fire UID, WhatsApp/Email, Issue Type: *Payment Query / UID Correction / Squad Entry / General*, Message) that submits to Google Apps Script (`action: "contact_query"`) and logs into a `Queries` tab in the same Google Sheet.
+12. `src/components/Footer.jsx` (Esports links, tournament rules summary, organizer details, and prominent **"Made by TK Web Solutions"** credit linking to `https://tkwebsolutions.in/`)
+13. `backend/Code.gs` (Complete Google Apps Script supporting:
+    - Sheet 1 `Bookings`: `Timestamp | Order ID | Exact Amount | Slot No | Player Name | Free Fire UID | Mobile | Email | Match Type | Status`
+    - Sheet 2 `Queries`: `Timestamp | Name | Free Fire UID | Contact | Issue Type | Message`
+    - `create_order`, `payment_received` MacroDroid regex webhook, `contact_query` handler, `doGet` for `orderId` polling, `ffUid` search, and confirmed roster list, plus automated HTML email receipts via `MailApp`).
+14. `SETUP_GUIDE.md` (Step-by-step instructions for Google Sheet tabs, Apps Script deployment, MacroDroid setup, and Vercel hosting).
+
+---
+
+## 3. VISUAL & GAMING EFFECT GUIDELINES
+- **Color Palette:** Matte Obsidian (`#07090E`) background, `#101522` glassmorphism cards (`backdrop-blur-md`), Neon Ember Orange (`#FF5500`), Fire Gold (`#FFAA00`), and Electric Cyan (`#00F0FF`).
+- **Gaming Micro-Interactions:**
+  - Animated neon border glow on character and mode cards.
+  - Web Audio API lightweight synth hover/click feedback (no external MP3 files needed, with an optional sound toggle button).
+  - Smooth scroll navigation and responsive mobile layout.
