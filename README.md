@@ -19,7 +19,7 @@
 - **1st Prize:** ₹600 (Winning Squad)
 - **Capacity:** Strictly 12 Squads = 48 Players Maximum
 - **Entry Fee:** ₹25 per player (Solo) | ₹100 per Squad (4 players)
-- **Official Host:** Anirudh Singh (IGN: `ANIRUDH•RJ05`, Level 61, Guild `CEXPRIMER'S`, FF UID: `3029117867`)
+- **Official Host:** Anirudh Singh (IGN: `ANIRUDH•RJ05`, Level 61, Guild `ACE PRIMERS`, FF UID: `3029117867`)
 - **Official UPI:** `8209071700@ptsbi`
 - **Zero Fake Data:** 100% live telemetry from Google Sheets. Shows exact remaining slots and confirmed squads.
 - **Manual Sheet Entries:** Organizer manual entries in Google Sheets appear live immediately on the website!

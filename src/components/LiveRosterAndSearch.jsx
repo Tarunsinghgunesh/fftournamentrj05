@@ -28,6 +28,11 @@ export default function LiveRosterAndSearch({ externalSearch = '', onRegisterCli
     confirmedPlayers: 0,
     remainingPlayers: 48,
     confirmedSquads: 0,
+    squadBookingsCount: 0,
+    soloBookingsCount: 0,
+    soloFormedSquads: 0,
+    soloWaitingPlayers: 0,
+    remainingSquads: 12,
     maxCapacity: 48,
     maxSquads: 12,
     isFull: false
@@ -53,6 +58,11 @@ export default function LiveRosterAndSearch({ externalSearch = '', onRegisterCli
         confirmedPlayers: 0,
         remainingPlayers: 48,
         confirmedSquads: 0,
+        squadBookingsCount: 0,
+        soloBookingsCount: 0,
+        soloFormedSquads: 0,
+        soloWaitingPlayers: 0,
+        remainingSquads: 12,
         maxCapacity: 48,
         maxSquads: 12,
         isFull: false
@@ -66,13 +76,27 @@ export default function LiveRosterAndSearch({ externalSearch = '', onRegisterCli
     setFetchError(null);
     try {
       // 1. Fetch stats
-      const statsRes = await fetch(`${scriptUrl}?action=stats`);
-      const statsData = await statsRes.json();
+      const statsRes = await fetch(`${scriptUrl}?action=stats`, { redirect: 'follow' });
+      const statsText = await statsRes.text();
+      let statsData = null;
+      try {
+        statsData = JSON.parse(statsText);
+      } catch (e) {
+        if (statsText.includes('accounts.google.com') || statsText.includes('<!doctype html>')) {
+          setFetchError('Apps Script Access Note: Please ensure "Who has access" is set to "Anyone" in your Apps Script Web App Deployment.');
+        }
+      }
+
       if (statsData && statsData.success) {
         setStats({
           confirmedPlayers: statsData.confirmedPlayers || 0,
           remainingPlayers: typeof statsData.remainingPlayers === 'number' ? statsData.remainingPlayers : 48,
-          confirmedSquads: statsData.confirmedSquads || 0,
+          confirmedSquads: statsData.totalSquadsFilled || statsData.confirmedSquads || 0,
+          squadBookingsCount: statsData.squadBookingsCount || 0,
+          soloBookingsCount: statsData.soloBookingsCount || 0,
+          soloFormedSquads: statsData.soloFormedSquads || 0,
+          soloWaitingPlayers: statsData.soloWaitingPlayers || 0,
+          remainingSquads: typeof statsData.remainingSquads === 'number' ? statsData.remainingSquads : 12,
           maxCapacity: statsData.maxCapacity || 48,
           maxSquads: statsData.maxSquads || 12,
           isFull: statsData.isFull || false
@@ -80,15 +104,20 @@ export default function LiveRosterAndSearch({ externalSearch = '', onRegisterCli
       }
 
       // 2. Fetch confirmed list
-      const listRes = await fetch(`${scriptUrl}?action=list`);
-      const listData = await listRes.json();
+      const listRes = await fetch(`${scriptUrl}?action=list`, { redirect: 'follow' });
+      const listText = await listRes.text();
+      let listData = null;
+      try {
+        listData = JSON.parse(listText);
+      } catch (e) {}
+
       if (listData && listData.success && Array.isArray(listData.roster)) {
         setRoster(listData.roster);
       }
       playSuccess();
     } catch (err) {
       console.warn('Live Google Sheet sync error:', err);
-      setFetchError('Could not reach Google Apps Script. Check network or deployment URL.');
+      setFetchError('Connecting to live Google Sheet...');
     } finally {
       setLoading(false);
       setLastUpdated(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
@@ -146,74 +175,117 @@ export default function LiveRosterAndSearch({ externalSearch = '', onRegisterCli
         </div>
 
         {/* ========================================================= */}
-        {/* REAL-TIME TELEMETRY STATS BAR */}
+        {/* REAL-TIME TELEMETRY STATS BAR (SQUAD + SOLO BREAKDOWN) */}
         {/* ========================================================= */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-5xl mx-auto mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-5xl mx-auto mb-6">
           
-          {/* Stat 1: Confirmed Players */}
-          <div className="glass-panel-glow p-5 rounded-2xl border-l-4 border-l-neonGreen">
-            <div className="flex items-center justify-between text-xs font-orbitron text-slate-400 mb-1">
-              <span>Confirmed Players</span>
-              <CheckCircle2 className="w-4 h-4 text-neonGreen" />
+          {/* Stat 1: Squad Bookings */}
+          <div className="glass-panel-glow p-5 rounded-2xl border-l-4 border-l-neonCyan flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between text-xs font-orbitron text-slate-400 mb-1">
+                <span>Squad Bookings (₹100)</span>
+                <Users className="w-4 h-4 text-neonCyan" />
+              </div>
+              <div className="text-2xl sm:text-3xl font-black font-orbitron text-white">
+                {stats.squadBookingsCount} <span className="text-xs text-neonCyan font-normal">Squads</span>
+              </div>
+              <p className="text-[11px] text-slate-300 mt-1 font-mono">
+                {stats.squadBookingsCount * 4} Players Confirmed
+              </p>
             </div>
-            <div className="text-2xl sm:text-3xl font-black font-orbitron text-white">
-              {stats.confirmedPlayers} <span className="text-xs text-slate-500 font-normal">/ {stats.maxCapacity}</span>
-            </div>
-            <div className="w-full h-1.5 bg-obsidian rounded-full overflow-hidden mt-2 border border-white/10">
-              <div 
-                className="h-full bg-neonGreen transition-all duration-500" 
-                style={{ width: `${Math.min(100, (stats.confirmedPlayers / stats.maxCapacity) * 100)}%` }} 
-              />
+            <div className="mt-3 pt-2 border-t border-white/5 flex items-center justify-between text-[10px] text-slate-400">
+              <span className="px-2 py-0.5 rounded bg-neonCyan/10 text-neonCyan font-bold">4 Players / Squad</span>
+              <span className="text-white font-mono">{stats.squadBookingsCount} Slots</span>
             </div>
           </div>
 
-          {/* Stat 2: Remaining Slots */}
-          <div className="glass-panel-glow p-5 rounded-2xl border-l-4 border-l-neonOrange">
-            <div className="flex items-center justify-between text-xs font-orbitron text-slate-400 mb-1">
-              <span>Slots Remaining</span>
-              <Flame className="w-4 h-4 text-neonOrange" />
-            </div>
-            <div className="text-2xl sm:text-3xl font-black font-orbitron text-neonOrange">
-              {stats.remainingPlayers} <span className="text-xs text-slate-400 font-normal">Seats Left</span>
-            </div>
-            <p className="text-[11px] text-slate-400 mt-2">
-              {stats.remainingPlayers === 0 ? 'Lobby 100% Full!' : 'Open for registration'}
-            </p>
-          </div>
-
-          {/* Stat 3: Squads Equivalent Filled */}
-          <div className="glass-panel-glow p-5 rounded-2xl border-l-4 border-l-neonCyan">
-            <div className="flex items-center justify-between text-xs font-orbitron text-slate-400 mb-1">
-              <span>Squads Filled</span>
-              <Users className="w-4 h-4 text-neonCyan" />
-            </div>
-            <div className="text-2xl sm:text-3xl font-black font-orbitron text-white">
-              {stats.confirmedSquads} <span className="text-xs text-slate-500 font-normal">/ {stats.maxSquads} Squads</span>
-            </div>
-            <p className="text-[11px] text-slate-400 mt-2 font-mono">
-              Max 12 Squads = 48
-            </p>
-          </div>
-
-          {/* Stat 4: Match & Map Details */}
+          {/* Stat 2: Solo Bookings & Auto-Squad Pairing */}
           <div className="glass-panel-glow p-5 rounded-2xl border-l-4 border-l-neonGold flex flex-col justify-between">
             <div>
               <div className="flex items-center justify-between text-xs font-orbitron text-slate-400 mb-1">
-                <span>Match Date & Map</span>
-                <MapPin className="w-4 h-4 text-neonGold" />
+                <span>Solo Bookings (₹25)</span>
+                <Zap className="w-4 h-4 text-neonGold fill-neonGold" />
               </div>
-              <div className="text-sm font-bold text-white font-orbitron">
-                Bermuda Only
+              <div className="text-2xl sm:text-3xl font-black font-orbitron text-white">
+                {stats.soloBookingsCount} <span className="text-xs text-neonGold font-normal">Solo Players</span>
               </div>
-              <p className="text-[11px] text-neonGold font-medium mt-0.5">
-                Sun, 29 Nov 2026
+              <p className="text-[11px] text-slate-300 mt-1 font-mono">
+                {stats.soloFormedSquads} Squad{stats.soloFormedSquads !== 1 ? 's' : ''} Formed
+                {stats.soloWaitingPlayers > 0 ? ` (${stats.soloWaitingPlayers}/4 Waiting)` : ''}
               </p>
             </div>
-            <div className="flex items-center justify-between pt-2 border-t border-white/5 text-[11px] text-slate-400">
-              <span>1st Prize: <strong className="text-neonGold font-orbitron">₹600</strong></span>
+            <div className="mt-3 pt-2 border-t border-white/5 flex items-center justify-between text-[10px] text-slate-400">
+              <span className="px-2 py-0.5 rounded bg-neonGold/10 text-neonGold font-bold">4 Solos = 1 Squad</span>
+              <span className="text-white font-mono">{stats.soloWaitingPlayers}/4 Next Squad</span>
             </div>
           </div>
 
+          {/* Stat 3: Total Formed Squads / Lobby Filled */}
+          <div className="glass-panel-glow p-5 rounded-2xl border-l-4 border-l-neonGreen flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between text-xs font-orbitron text-slate-400 mb-1">
+                <span>Total Lobby Filled</span>
+                <CheckCircle2 className="w-4 h-4 text-neonGreen" />
+              </div>
+              <div className="text-2xl sm:text-3xl font-black font-orbitron text-white">
+                {stats.confirmedPlayers} <span className="text-xs text-slate-400 font-normal">/ {stats.maxCapacity} Players</span>
+              </div>
+              <div className="w-full h-1.5 bg-obsidian rounded-full overflow-hidden mt-2 border border-white/10">
+                <div 
+                  className="h-full bg-neonGreen transition-all duration-500" 
+                  style={{ width: `${Math.min(100, (stats.confirmedPlayers / stats.maxCapacity) * 100)}%` }} 
+                />
+              </div>
+            </div>
+            <div className="mt-3 pt-2 border-t border-white/5 flex items-center justify-between text-[10px] text-slate-400">
+              <span className="text-neonGreen font-bold">{stats.confirmedSquads} / {stats.maxSquads} Squads</span>
+              <span className="text-white font-mono">{Math.round((stats.confirmedPlayers / stats.maxCapacity) * 100)}% Full</span>
+            </div>
+          </div>
+
+          {/* Stat 4: Remaining Slots */}
+          <div className="glass-panel-glow p-5 rounded-2xl border-l-4 border-l-neonOrange flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between text-xs font-orbitron text-slate-400 mb-1">
+                <span>Slots Remaining</span>
+                <Flame className="w-4 h-4 text-neonOrange" />
+              </div>
+              <div className="text-2xl sm:text-3xl font-black font-orbitron text-neonOrange">
+                {stats.remainingPlayers} <span className="text-xs text-slate-300 font-normal">Seats Left</span>
+              </div>
+              <p className="text-[11px] text-slate-400 mt-1">
+                ~{stats.remainingSquads} Full Squad slot{stats.remainingSquads !== 1 ? 's' : ''} open
+              </p>
+            </div>
+            <div className="mt-3 pt-2 border-t border-white/5 flex items-center justify-between text-[10px] text-slate-400">
+              <span className={`px-2 py-0.5 rounded font-bold ${stats.remainingPlayers === 0 ? 'bg-cyberRed/20 text-cyberRed' : 'bg-neonOrange/15 text-neonOrange'}`}>
+                {stats.remainingPlayers === 0 ? 'Lobby Full' : 'Open Registration'}
+              </span>
+              <span className="text-neonGold font-mono">1st: ₹600</span>
+            </div>
+          </div>
+
+        </div>
+
+        {/* Solo Matchmaking Trust Callout */}
+        <div className="max-w-5xl mx-auto mb-8 p-3.5 sm:p-4 rounded-xl bg-surface/70 border border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-300">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-neonGold/10 border border-neonGold/30 flex items-center justify-center flex-shrink-0 text-neonGold">
+              <ShieldAlert className="w-4 h-4" />
+            </div>
+            <div>
+              <span className="font-orbitron font-bold text-white block">
+                Automated Solo-to-Squad Pairing Engine:
+              </span>
+              <span className="text-[11px] text-slate-400">
+                Solo registrations (₹25) are sequentially paired into dedicated 4-man squads. Total match capacity is strictly capped at 48 players (12 squads max) on Bermuda map.
+              </span>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 flex-shrink-0 text-[11px] font-orbitron font-semibold text-neonCyan">
+            <Calendar className="w-3.5 h-3.5" />
+            <span>Match: Sun, 29 Nov 2026</span>
+          </div>
         </div>
 
         {/* ========================================================= */}

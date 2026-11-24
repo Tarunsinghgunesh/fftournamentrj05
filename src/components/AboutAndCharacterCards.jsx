@@ -35,6 +35,7 @@ export default function AboutAndCharacterCards() {
       specialAbility: 'Drop The Beat',
       archetypeColor: '#00F0FF',
       badge: 'Active Aura',
+      imageSrc: '/char-alok.jpg',
       description: 'Creates a 5m rhythmic aura that increases sprint velocity by 15% and continuously restores 3 HP/sec for 10s. Crucial for Bermuda safe zone rotations when under crossfire.',
       stats: {
         auraHeal: 95,
@@ -42,21 +43,7 @@ export default function AboutAndCharacterCards() {
         teamUtility: 100,
         cooldown: 45
       },
-      icon: Activity,
-      svgArt: (
-        <svg viewBox="0 0 100 100" className="w-full h-full fill-none">
-          <circle cx="50" cy="50" r="42" stroke="#00F0FF" strokeWidth="2" strokeDasharray="6 4" opacity="0.6" className="animate-spin" style={{ animationDuration: '30s' }} />
-          <polygon points="50,15 82,33 82,67 50,85 18,67 18,33" stroke="#00F0FF" strokeWidth="2.5" fill="rgba(0, 240, 255, 0.08)" />
-          <circle cx="50" cy="50" r="18" fill="url(#alokGlow)" />
-          <path d="M40 50h20M50 40v20" stroke="#FFFFFF" strokeWidth="3" strokeLinecap="round" />
-          <defs>
-            <radialGradient id="alokGlow">
-              <stop offset="0%" stopColor="#00F0FF" stopOpacity="0.8" />
-              <stop offset="100%" stopColor="#0055FF" stopOpacity="0.2" />
-            </radialGradient>
-          </defs>
-        </svg>
-      )
+      icon: Activity
     },
     {
       id: 'chrono',
@@ -65,6 +52,7 @@ export default function AboutAndCharacterCards() {
       specialAbility: 'Time Turner',
       archetypeColor: '#FF5500',
       badge: 'Active Force Field',
+      imageSrc: '/char-chrono.jpg',
       description: 'Deploys a spherical force field that absorbs up to 800 incoming weapon damage. Allows aggressive rushers to safely breach enemy compounds in Clock Tower & Factory.',
       stats: {
         auraHeal: 40,
@@ -72,15 +60,7 @@ export default function AboutAndCharacterCards() {
         teamUtility: 90,
         cooldown: 75
       },
-      icon: ShieldCheck,
-      svgArt: (
-        <svg viewBox="0 0 100 100" className="w-full h-full fill-none">
-          <circle cx="50" cy="50" r="40" stroke="#FF5500" strokeWidth="2" opacity="0.8" />
-          <circle cx="50" cy="50" r="30" stroke="#FFAA00" strokeWidth="1.5" strokeDasharray="4 2" />
-          <path d="M50 20 L75 35 L75 65 L50 80 L25 65 L25 35 Z" stroke="#FF5500" strokeWidth="3" fill="rgba(255, 85, 0, 0.12)" />
-          <path d="M50 32v18l12 8" stroke="#FFFFFF" strokeWidth="3" strokeLinecap="round" />
-        </svg>
-      )
+      icon: ShieldCheck
     },
     {
       id: 'kelly',
@@ -89,6 +69,7 @@ export default function AboutAndCharacterCards() {
       specialAbility: 'Deadly Velocity',
       archetypeColor: '#FFAA00',
       badge: 'Awakened Passive',
+      imageSrc: '/char-kelly.jpg',
       description: 'Passive sprint speed is boosted by 6%. After sprinting 4 seconds, Awakened Deadly Velocity activates: first shot on target inflicts 106% critical damage.',
       stats: {
         auraHeal: 25,
@@ -96,19 +77,7 @@ export default function AboutAndCharacterCards() {
         teamUtility: 75,
         cooldown: 15
       },
-      icon: Wind,
-      svgArt: (
-        <svg viewBox="0 0 100 100" className="w-full h-full fill-none">
-          <path d="M20 70 L55 25 L45 50 L80 30 L40 85 L48 62 Z" fill="url(#kellyGlow)" stroke="#FFAA00" strokeWidth="2" />
-          <circle cx="50" cy="50" r="42" stroke="#FFAA00" strokeWidth="1" strokeDasharray="8 6" opacity="0.5" />
-          <defs>
-            <radialGradient id="kellyGlow">
-              <stop offset="0%" stopColor="#FFAA00" stopOpacity="0.9" />
-              <stop offset="100%" stopColor="#FF5500" stopOpacity="0.4" />
-            </radialGradient>
-          </defs>
-        </svg>
-      )
+      icon: Wind
     },
     {
       id: 'wukong',
@@ -117,6 +86,7 @@ export default function AboutAndCharacterCards() {
       specialAbility: 'Camouflage',
       archetypeColor: '#00FF66',
       badge: 'Active Stealth',
+      imageSrc: '/char-wukong.jpg',
       description: 'Transforms into a bush for 15s with 10% movement penalty. Breaks upon firing, and cooldown resets instantly whenever an enemy combatant is knocked down.',
       stats: {
         auraHeal: 30,
@@ -124,14 +94,7 @@ export default function AboutAndCharacterCards() {
         teamUtility: 80,
         cooldown: 60
       },
-      icon: Ghost,
-      svgArt: (
-        <svg viewBox="0 0 100 100" className="w-full h-full fill-none">
-          <path d="M50 18 C30 25 20 45 25 70 C35 60 45 65 50 82 C55 65 65 60 75 70 C80 45 70 25 50 18 Z" fill="rgba(0, 255, 102, 0.15)" stroke="#00FF66" strokeWidth="2.5" />
-          <circle cx="42" cy="46" r="4" fill="#00FF66" />
-          <circle cx="58" cy="46" r="4" fill="#00FF66" />
-        </svg>
-      )
+      icon: Ghost
     }
   ];
 
@@ -203,8 +166,15 @@ export default function AboutAndCharacterCards() {
                       <IconComp className="w-4 h-4" style={{ color: char.archetypeColor }} />
                     </div>
 
-                    <div className="w-16 h-16 mx-auto my-2 p-1 group-hover:scale-110 transition-transform">
-                      {char.svgArt}
+                    <div className="w-20 h-20 sm:w-24 sm:h-24 mx-auto my-2 rounded-2xl overflow-hidden border-2 transition-all duration-300 relative group-hover:scale-105"
+                      style={{ borderColor: isSelected ? char.archetypeColor : 'rgba(255,255,255,0.1)' }}
+                    >
+                      <img 
+                        src={char.imageSrc} 
+                        alt={char.name} 
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-obsidian/70 via-transparent to-transparent" />
                     </div>
 
                     <h4 className="font-orbitron font-extrabold text-sm text-white text-center mt-2 group-hover:text-neonOrange transition-colors">
@@ -224,31 +194,49 @@ export default function AboutAndCharacterCards() {
                 <div 
                   className="glass-panel-glow border-beam rounded-3xl p-6 sm:p-8 relative overflow-hidden transition-all duration-300"
                 >
-                  <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-white/10">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="w-2.5 h-2.5 rounded-full animate-ping" style={{ backgroundColor: characters[selectedCharacter].archetypeColor }} />
-                        <span className="text-xs font-orbitron uppercase tracking-widest text-slate-400">Class Archetype</span>
+                  <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 pb-6 border-b border-white/10">
+                    <div className="w-28 h-28 sm:w-36 sm:h-36 rounded-2xl overflow-hidden border-2 flex-shrink-0 shadow-2xl relative"
+                      style={{ 
+                        borderColor: characters[selectedCharacter].archetypeColor,
+                        boxShadow: `0 0 30px ${characters[selectedCharacter].archetypeColor}50` 
+                      }}
+                    >
+                      <img 
+                        src={characters[selectedCharacter].imageSrc} 
+                        alt={characters[selectedCharacter].name} 
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute top-2 left-2 px-2 py-0.5 rounded bg-black/60 backdrop-blur-md text-[9px] font-orbitron font-bold text-white border border-white/20">
+                        {characters[selectedCharacter].badge}
                       </div>
+                    </div>
+
+                    <div className="flex-1 text-center sm:text-left">
+                      <div className="flex flex-wrap items-center justify-center sm:justify-between gap-2 mb-2">
+                        <div className="flex items-center gap-2">
+                          <span className="w-2.5 h-2.5 rounded-full animate-ping" style={{ backgroundColor: characters[selectedCharacter].archetypeColor }} />
+                          <span className="text-xs font-orbitron uppercase tracking-widest text-slate-400">{characters[selectedCharacter].role}</span>
+                        </div>
+                        <div className="px-3 py-1 rounded-full border text-xs font-orbitron font-bold"
+                          style={{ 
+                            color: characters[selectedCharacter].archetypeColor,
+                            borderColor: `${characters[selectedCharacter].archetypeColor}50`,
+                            backgroundColor: `${characters[selectedCharacter].archetypeColor}15`
+                          }}
+                        >
+                          {characters[selectedCharacter].specialAbility}
+                        </div>
+                      </div>
+
                       <h3 className="text-2xl sm:text-3xl font-black font-orbitron text-white mt-1">
                         {characters[selectedCharacter].name}
                       </h3>
-                    </div>
-                    
-                    <div className="px-3.5 py-1.5 rounded-full border text-xs font-orbitron font-bold"
-                      style={{ 
-                        color: characters[selectedCharacter].archetypeColor,
-                        borderColor: `${characters[selectedCharacter].archetypeColor}50`,
-                        backgroundColor: `${characters[selectedCharacter].archetypeColor}15`
-                      }}
-                    >
-                      {characters[selectedCharacter].specialAbility}
+
+                      <p className="text-slate-300 text-xs sm:text-sm leading-relaxed mt-2">
+                        {characters[selectedCharacter].description}
+                      </p>
                     </div>
                   </div>
-
-                  <p className="text-slate-300 text-xs sm:text-sm leading-relaxed mt-4 mb-6">
-                    {characters[selectedCharacter].description}
-                  </p>
 
                   {/* Stat Bars */}
                   <div className="space-y-3.5 pt-2">

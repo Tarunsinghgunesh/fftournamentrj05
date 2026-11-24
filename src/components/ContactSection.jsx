@@ -38,7 +38,7 @@ export default function ContactSection() {
     name: 'Anirudh Singh',
     ign: 'ANIRUDH•RJ05',
     level: 61,
-    guild: "CEXPRIMER'S",
+    guild: "ACE PRIMERS",
     uid: '3029117867',
     likes: '4,400+',
     score: '5,829',
@@ -83,7 +83,8 @@ export default function ContactSection() {
       try {
         await fetch(scriptUrl, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          redirect: 'follow',
           body: JSON.stringify({
             action: 'contact_query',
             ...queryForm,

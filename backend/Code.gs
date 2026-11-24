@@ -9,7 +9,7 @@
  * Official Spreadsheet: https://docs.google.com/spreadsheets/d/1-lN0IcUEDyn3ju54xD7y8yiU1LTmkWGxbgfO2tXWmJ0/edit
  * 
  * Organizer: Anirudh Singh
- * In-Game Name: ANIRUDH•RJ05 | Level: 61 | Guild: CEXPRIMER'S | FF UID: 3029117867
+ * In-Game Name: ANIRUDH•RJ05 | Level: 61 | Guild: ACE PRIMERS | FF UID: 3029117867
  * WhatsApp / Phone: +91 8209071700 | Email: anirudhgunesh5@gmail.com
  * Official UPI ID: 8209071700@ptsbi
  * Agency: Made by TK Web Solutions (https://tkwebsolutions.in/)
@@ -97,6 +97,8 @@ function doGet(e) {
 
     const confirmedBookings = [];
     let totalConfirmedPlayers = 0;
+    let squadBookingsCount = 0;
+    let soloBookingsCount = 0;
 
     for (let i = 1; i < data.length; i++) {
       const row = data[i];
@@ -105,18 +107,26 @@ function doGet(e) {
       // Read all rows where Status is "Confirmed" (case-insensitive)
       // Works for both online bookings and manual entries typed by the organizer!
       if (status === 'confirmed') {
-        const count = parseInt(row[11]) || (String(row[2]).toLowerCase().includes('squad') ? 4 : 1);
+        const rawType = String(row[2] || '').trim().toLowerCase();
+        const isSquad = rawType.includes('squad') || parseInt(row[11]) === 4;
+        const count = isSquad ? 4 : (parseInt(row[11]) || 1);
+
+        if (isSquad) {
+          squadBookingsCount++;
+        } else {
+          soloBookingsCount++;
+        }
         totalConfirmedPlayers += count;
 
         confirmedBookings.push({
           rowId: i + 1,
           timestamp: formatTimestamp(row[0]),
           orderId: String(row[1] || 'OFFLINE-' + i),
-          bookingType: String(row[2] || (count === 4 ? 'Squad' : 'Solo')),
-          amount: parseFloat(row[3]) || (count === 4 ? 100 : 25),
+          bookingType: isSquad ? 'Squad' : 'Solo',
+          amount: parseFloat(row[3]) || (isSquad ? 100 : 25),
           utr: String(row[4] || 'N/A'),
-          slotNo: String(row[5] || ('SLOT-' + String(confirmedBookings.length + 1).padStart(2, '0'))),
-          teamName: String(row[6] || (row[7] ? String(row[7]).split('-')[0] : 'Squad ' + i)),
+          slotNo: String(row[5] || (isSquad ? ('SQUAD-SLOT-' + String(squadBookingsCount).padStart(2, '0')) : ('SOLO-SLOT-' + String(soloBookingsCount).padStart(2, '0')))),
+          teamName: String(row[6] || (row[7] ? String(row[7]).split('-')[0] : (isSquad ? 'Squad ' + squadBookingsCount : 'Solo Player ' + soloBookingsCount))),
           player1: String(row[7] || ''),
           player2: String(row[8] || ''),
           player3: String(row[9] || ''),
@@ -128,19 +138,27 @@ function doGet(e) {
       }
     }
 
+    const soloFormedSquads = Math.floor(soloBookingsCount / 4);
+    const soloWaitingPlayers = soloBookingsCount % 4;
+    const totalSquadsFilled = Math.min(MAX_SQUADS, squadBookingsCount + soloFormedSquads);
+    const remainingPlayers = Math.max(0, MAX_CAPACITY - totalConfirmedPlayers);
+    const remainingSquads = Math.max(0, MAX_SQUADS - totalSquadsFilled);
+
     // 1. Live Telemetry Stats
     if (action === 'stats') {
-      const remaining = Math.max(0, MAX_CAPACITY - totalConfirmedPlayers);
-      const squadsFilled = Math.min(MAX_SQUADS, Math.floor(totalConfirmedPlayers / 4));
-
       return jsonResponse({
         success: true,
         confirmedPlayers: totalConfirmedPlayers,
         maxCapacity: MAX_CAPACITY,
-        remainingPlayers: remaining,
-        confirmedSquads: squadsFilled,
+        remainingPlayers: remainingPlayers,
+        squadBookingsCount: squadBookingsCount,
+        soloBookingsCount: soloBookingsCount,
+        soloFormedSquads: soloFormedSquads,
+        soloWaitingPlayers: soloWaitingPlayers,
+        totalSquadsFilled: totalSquadsFilled,
+        remainingSquads: remainingSquads,
         maxSquads: MAX_SQUADS,
-        isFull: remaining <= 0,
+        isFull: remainingPlayers <= 0,
         tournament: 'RJ05 Esports — Season 1 Tournament (1st Match)',
         date: 'Sunday, 29 November 2026',
         map: 'Bermuda (Only)',
@@ -154,7 +172,13 @@ function doGet(e) {
         success: true,
         count: confirmedBookings.length,
         totalPlayers: totalConfirmedPlayers,
-        remainingSlots: Math.max(0, MAX_CAPACITY - totalConfirmedPlayers),
+        remainingSlots: remainingPlayers,
+        squadBookingsCount: squadBookingsCount,
+        soloBookingsCount: soloBookingsCount,
+        soloFormedSquads: soloFormedSquads,
+        soloWaitingPlayers: soloWaitingPlayers,
+        totalSquadsFilled: totalSquadsFilled,
+        remainingSquads: remainingSquads,
         roster: confirmedBookings.reverse() // Newest entries first
       });
     }
@@ -194,7 +218,9 @@ function doGet(e) {
       organizer: 'Anirudh Singh',
       hostUid: '3029117867',
       totalConfirmed: totalConfirmedPlayers,
-      remaining: Math.max(0, MAX_CAPACITY - totalConfirmedPlayers),
+      squadBookings: squadBookingsCount,
+      soloBookings: soloBookingsCount,
+      remaining: remainingPlayers,
       sheetUrl: 'https://docs.google.com/spreadsheets/d/' + SPREADSHEET_ID + '/edit'
     });
 
@@ -477,7 +503,7 @@ function sendDualConfirmationEmails(data) {
             <strong style="color: #00F0FF;">MATCH DAY NOTICE:</strong><br/>
             • Custom Room ID & Password will be delivered via WhatsApp to <strong style="color: #FFF;">${data.mobile}</strong> 15 minutes before match kickoff.<br/>
             • All squad members must join strictly under their registered Free Fire UIDs. Unregistered UIDs will be kicked by the host.<br/>
-            • Official Host: <strong>Anirudh Singh</strong> (IGN: <span style="color:#FFAA00;">ANIRUDH•RJ05</span> | UID: <span style="color:#00F0FF;">3029117867</span> | Level: 61 | Guild: CEXPRIMER'S)
+            • Official Host: <strong>Anirudh Singh</strong> (IGN: <span style="color:#FFAA00;">ANIRUDH•RJ05</span> | UID: <span style="color:#00F0FF;">3029117867</span> | Level: 61 | Guild: ACE PRIMERS)
           </div>
 
           <div style="text-align: center; margin-top: 24px; font-size: 11px; color: #64748B; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 16px;">

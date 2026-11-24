@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { 
   Trophy, 
   ShieldCheck, 
@@ -14,18 +14,19 @@ import {
   Zap, 
   Users, 
   RefreshCw, 
-  Sparkles,
-  ArrowRight,
-  Shield,
-  CreditCard,
-  Hash,
-  Crown
+  ArrowRight, 
+  Shield, 
+  CreditCard, 
+  Hash, 
+  Crown,
+  ClipboardPaste,
+  Info
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { playClick, playHover, playSuccess, playError, playBooyah } from '../utils/audio';
 
 export default function BookingTerminal({ onBookingSuccess }) {
-  // Step 1: Form | Step 2: UPI QR + UTR Input | Step 3: Boarding Pass
+  // Step 1: Form | Step 2: UPI Apps + QR + UTR Input | Step 3: Boarding Pass
   const [currentStep, setCurrentStep] = useState(1);
   const [bookingType, setBookingType] = useState('Squad'); // 'Squad' (₹100) or 'Solo' (₹25)
   const [submitting, setSubmitting] = useState(false);
@@ -46,8 +47,6 @@ export default function BookingTerminal({ onBookingSuccess }) {
   });
 
   const [formErrors, setFormErrors] = useState({});
-
-  // Confirmed Result State
   const [confirmedBooking, setConfirmedBooking] = useState(null);
 
   const scriptUrl = import.meta.env.VITE_GOOGLE_SCRIPT_URL;
@@ -93,7 +92,6 @@ export default function BookingTerminal({ onBookingSuccess }) {
     return Object.keys(err).length === 0;
   };
 
-  // Move from Step 1 to Step 2 (QR + UTR)
   const handleProceedToPayment = (e) => {
     e.preventDefault();
     if (!validateStep1()) {
@@ -103,6 +101,24 @@ export default function BookingTerminal({ onBookingSuccess }) {
     playClick();
     setErrorMessage('');
     setCurrentStep(2);
+  };
+
+  // 1-Tap Paste UTR from Clipboard
+  const handlePasteUtr = async () => {
+    try {
+      const clipText = await navigator.clipboard.readText();
+      const extractedDigits = clipText.replace(/\D/g, '');
+      if (extractedDigits.length >= 12) {
+        const utr12 = extractedDigits.slice(-12);
+        setFormData(prev => ({ ...prev, utrNumber: utr12 }));
+        playSuccess();
+      } else if (clipText.trim()) {
+        setFormData(prev => ({ ...prev, utrNumber: clipText.trim().slice(0, 12) }));
+        playClick();
+      }
+    } catch (err) {
+      console.warn('Clipboard access not granted:', err);
+    }
   };
 
   // Submit Step 2: Validate 12-digit UTR & POST to Apps Script
@@ -138,15 +154,21 @@ export default function BookingTerminal({ onBookingSuccess }) {
       email: formData.email.trim()
     };
 
-    // If Google Apps Script is provided, call it
     if (scriptUrl) {
       try {
         const response = await fetch(scriptUrl, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          redirect: 'follow',
           body: JSON.stringify(payload)
         });
-        const resData = await response.json();
+        const resText = await response.text();
+        let resData = null;
+        try {
+          resData = JSON.parse(resText);
+        } catch (e) {
+          console.warn('Could not parse JSON response:', resText);
+        }
 
         if (resData && !resData.success) {
           setErrorMessage(resData.message || 'Verification rejected. Please re-check your UTR or remaining slots.');
@@ -155,7 +177,6 @@ export default function BookingTerminal({ onBookingSuccess }) {
           return;
         }
 
-        // Successfully confirmed
         const confirmedData = {
           orderId: resData.orderId || generatedOrderId,
           slotNo: resData.slotNo || (bookingType === 'Squad' ? 'SQUAD-SLOT-01' : 'SOLO-SLOT-01'),
@@ -175,11 +196,11 @@ export default function BookingTerminal({ onBookingSuccess }) {
         finishBooking(confirmedData);
         return;
       } catch (err) {
-        console.warn('Backend call encountered an error. Proceeding with instant client confirmation.', err);
+        console.warn('Backend call fallback active.', err);
       }
     }
 
-    // Fallback confirmation when testing without live backend URL
+    // Local fallback confirmation
     const localConfirmed = {
       orderId: generatedOrderId,
       slotNo: bookingType === 'Squad' ? 'SQUAD-SLOT-01' : 'SOLO-SLOT-01',
@@ -205,10 +226,10 @@ export default function BookingTerminal({ onBookingSuccess }) {
     playBooyah();
     try {
       confetti({
-        particleCount: 120,
+        particleCount: 130,
         spread: 90,
         origin: { y: 0.6 },
-        colors: ['#FF5500', '#FFAA00', '#00F0FF', '#00FF66']
+        colors: ['#FF5500', '#FFAA00', '#00E5FF', '#10B981']
       });
     } catch (e) {}
 
@@ -224,12 +245,16 @@ export default function BookingTerminal({ onBookingSuccess }) {
     setTimeout(() => setCopiedText(''), 2000);
   };
 
-  // Dynamic UPI Deep Link
-  const upiDeepLink = `upi://pay?pa=${officialUpi}&pn=${encodeURIComponent(payeeName)}&am=${amount}&cu=INR&tn=${encodeURIComponent('RJ05_FF_Tournament')}`;
-  const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=240x240&margin=8&color=07090E&bgcolor=FFFFFF&data=${encodeURIComponent(upiDeepLink)}`;
+  // UPI Deep Links for 1-Tap Mobile Redirect
+  const genericUpiLink = `upi://pay?pa=${officialUpi}&pn=${encodeURIComponent(payeeName)}&am=${amount}&cu=INR&tn=${encodeURIComponent('RJ05_FF_Tournament')}`;
+  const phonePeLink = `phonepe://pay?pa=${officialUpi}&pn=${encodeURIComponent(payeeName)}&am=${amount}&cu=INR&tn=${encodeURIComponent('RJ05_FF_Tournament')}`;
+  const gPayLink = `gpay://upi/pay?pa=${officialUpi}&pn=${encodeURIComponent(payeeName)}&am=${amount}&cu=INR&tn=${encodeURIComponent('RJ05_FF_Tournament')}`;
+  const paytmLink = `paytmmp://pay?pa=${officialUpi}&pn=${encodeURIComponent(payeeName)}&am=${amount}&cu=INR&tn=${encodeURIComponent('RJ05_FF_Tournament')}`;
+
+  const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=240x240&margin=8&color=0B0F19&bgcolor=FFFFFF&data=${encodeURIComponent(genericUpiLink)}`;
 
   return (
-    <section id="booking" className="relative py-24 bg-obsidian border-t border-white/5 cyber-grid">
+    <section id="booking" className="relative py-24 bg-surface/30 border-t border-white/5 cyber-grid">
       
       {/* Background ambient lighting */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[650px] h-[500px] bg-neonOrange/10 blur-[160px] pointer-events-none rounded-full" />
@@ -238,15 +263,15 @@ export default function BookingTerminal({ onBookingSuccess }) {
         
         {/* Section Heading */}
         <div className="text-center max-w-3xl mx-auto mb-10">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-neonOrange/10 border border-neonOrange/30 text-neonOrange text-xs font-semibold tracking-wider font-orbitron mb-3">
-            <Zap className="w-3.5 h-3.5" />
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-neonOrange/15 border border-neonOrange/40 text-neonOrange text-xs font-semibold tracking-wider font-orbitron mb-3">
+            <Zap className="w-3.5 h-3.5 fill-neonOrange" />
             <span>SEASON 1 TOURNAMENT (1ST MATCH) • STRICT 48 PLAYERS</span>
           </div>
           <h2 className="text-3xl sm:text-5xl font-black font-orbitron text-white uppercase tracking-tight">
             SLOT BOOKING <span className="text-transparent bg-clip-text bg-gradient-to-r from-neonOrange via-neonGold to-orange-400">TERMINAL</span>
           </h2>
-          <p className="text-slate-400 text-sm sm:text-base mt-2 font-light">
-            Sunday, 29 Nov 2026 • Bermuda Map • 1st Prize ₹600. Instant entry lock with mandatory 12-Digit UTR payment verification.
+          <p className="text-slate-300 text-sm sm:text-base mt-2 font-light">
+            Sunday, 29 Nov 2026 • Bermuda Map • 1st Prize ₹600. Instant entry lock with 1-tap mobile payment and mandatory 12-Digit UTR verification.
           </p>
         </div>
 
@@ -254,7 +279,7 @@ export default function BookingTerminal({ onBookingSuccess }) {
         <div className="flex items-center justify-center max-w-lg mx-auto mb-10 px-4">
           <div className="flex items-center gap-2">
             <div className={`w-8 h-8 rounded-full flex items-center justify-center font-orbitron text-xs font-bold ${
-              currentStep === 1 ? 'bg-neonOrange text-white shadow-glow-orange' : 'bg-neonGreen text-obsidian'
+              currentStep === 1 ? 'bg-neonOrange text-white shadow-glow-orange' : 'bg-neonGreen text-white font-black'
             }`}>
               {currentStep > 1 ? <Check className="w-4 h-4" /> : '1'}
             </div>
@@ -267,12 +292,12 @@ export default function BookingTerminal({ onBookingSuccess }) {
 
           <div className="flex items-center gap-2">
             <div className={`w-8 h-8 rounded-full flex items-center justify-center font-orbitron text-xs font-bold ${
-              currentStep === 2 ? 'bg-neonOrange text-white shadow-glow-orange' : currentStep > 2 ? 'bg-neonGreen text-obsidian' : 'bg-surface border border-white/10 text-slate-400'
+              currentStep === 2 ? 'bg-neonOrange text-white shadow-glow-orange' : currentStep > 2 ? 'bg-neonGreen text-white font-black' : 'bg-surfaceLight border border-white/10 text-slate-400'
             }`}>
               {currentStep > 2 ? <Check className="w-4 h-4" /> : '2'}
             </div>
             <span className={`text-xs font-orbitron uppercase ${currentStep === 2 ? 'text-white font-bold' : 'text-slate-400'}`}>
-              UPI QR & UTR
+              1-Tap Pay & UTR
             </span>
           </div>
 
@@ -280,7 +305,7 @@ export default function BookingTerminal({ onBookingSuccess }) {
 
           <div className="flex items-center gap-2">
             <div className={`w-8 h-8 rounded-full flex items-center justify-center font-orbitron text-xs font-bold ${
-              currentStep === 3 ? 'bg-neonGreen text-obsidian font-black shadow-glow-green' : 'bg-surface border border-white/10 text-slate-400'
+              currentStep === 3 ? 'bg-neonGreen text-white font-black shadow-glow-green' : 'bg-surfaceLight border border-white/10 text-slate-400'
             }`}>
               3
             </div>
@@ -304,7 +329,7 @@ export default function BookingTerminal({ onBookingSuccess }) {
                 className={`p-4 rounded-2xl cursor-pointer border transition-all ${
                   bookingType === 'Squad'
                     ? 'bg-surfaceLight border-neonOrange shadow-glow-orange/30 scale-[1.02]'
-                    : 'bg-obsidian/70 border-white/10 hover:border-white/20'
+                    : 'bg-surface/70 border-white/10 hover:border-white/20'
                 }`}
               >
                 <div className="flex items-center justify-between mb-2">
@@ -314,7 +339,7 @@ export default function BookingTerminal({ onBookingSuccess }) {
                   <span className="font-orbitron font-black text-xl text-white">₹100</span>
                 </div>
                 <h4 className="font-orbitron font-bold text-sm text-white">Full Squad (4 Players)</h4>
-                <p className="text-[11px] text-slate-400 mt-0.5">₹25 per player • Guaranteed 1 Full Slot</p>
+                <p className="text-[11px] text-slate-300 mt-0.5">₹25 per player • Guaranteed 1 Full Slot</p>
               </div>
 
               <div
@@ -323,7 +348,7 @@ export default function BookingTerminal({ onBookingSuccess }) {
                 className={`p-4 rounded-2xl cursor-pointer border transition-all ${
                   bookingType === 'Solo'
                     ? 'bg-surfaceLight border-neonCyan shadow-glow-cyan/30 scale-[1.02]'
-                    : 'bg-obsidian/70 border-white/10 hover:border-white/20'
+                    : 'bg-surface/70 border-white/10 hover:border-white/20'
                 }`}
               >
                 <div className="flex items-center justify-between mb-2">
@@ -333,7 +358,7 @@ export default function BookingTerminal({ onBookingSuccess }) {
                   <span className="font-orbitron font-black text-xl text-white">₹25</span>
                 </div>
                 <h4 className="font-orbitron font-bold text-sm text-white">Solo Operative</h4>
-                <p className="text-[11px] text-slate-400 mt-0.5">1 Player Solo Slot</p>
+                <p className="text-[11px] text-slate-300 mt-0.5">1 Player Solo Slot</p>
               </div>
             </div>
 
@@ -342,7 +367,7 @@ export default function BookingTerminal({ onBookingSuccess }) {
               {/* Squad Name if Squad */}
               {bookingType === 'Squad' && (
                 <div>
-                  <label className="block text-xs font-orbitron uppercase tracking-wider text-slate-300 mb-1.5">
+                  <label className="block text-xs font-orbitron uppercase tracking-wider text-slate-200 mb-1.5">
                     Squad / Team Name <span className="text-neonOrange">*</span>
                   </label>
                   <input
@@ -350,8 +375,8 @@ export default function BookingTerminal({ onBookingSuccess }) {
                     value={formData.teamName}
                     onChange={(e) => setFormData({ ...formData, teamName: e.target.value })}
                     placeholder="e.g. RJ05 VIPERS, TITAN SQUAD"
-                    className={`w-full px-4 py-3 rounded-xl bg-obsidian/80 border text-white text-xs outline-none transition-all ${
-                      formErrors.teamName ? 'border-cyberRed' : 'border-white/10 focus:border-neonOrange'
+                    className={`w-full px-4 py-3 rounded-xl bg-surface border text-white text-xs outline-none transition-all ${
+                      formErrors.teamName ? 'border-cyberRed' : 'border-white/15 focus:border-neonOrange'
                     }`}
                   />
                   {formErrors.teamName && <p className="text-[10px] text-cyberRed mt-1">{formErrors.teamName}</p>}
@@ -361,7 +386,7 @@ export default function BookingTerminal({ onBookingSuccess }) {
               {/* Player 1 (Leader) Name & UID */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-orbitron uppercase tracking-wider text-slate-300 mb-1.5">
+                  <label className="block text-xs font-orbitron uppercase tracking-wider text-slate-200 mb-1.5">
                     {bookingType === 'Squad' ? 'Player 1 (Leader) Name' : 'Player In-Game Name'} <span className="text-neonOrange">*</span>
                   </label>
                   <input
@@ -369,15 +394,15 @@ export default function BookingTerminal({ onBookingSuccess }) {
                     value={formData.player1Name}
                     onChange={(e) => setFormData({ ...formData, player1Name: e.target.value })}
                     placeholder="e.g. RJ05_LEADER"
-                    className={`w-full px-4 py-3 rounded-xl bg-obsidian/80 border text-white text-xs outline-none transition-all ${
-                      formErrors.player1Name ? 'border-cyberRed' : 'border-white/10 focus:border-neonOrange'
+                    className={`w-full px-4 py-3 rounded-xl bg-surface border text-white text-xs outline-none transition-all ${
+                      formErrors.player1Name ? 'border-cyberRed' : 'border-white/15 focus:border-neonOrange'
                     }`}
                   />
                   {formErrors.player1Name && <p className="text-[10px] text-cyberRed mt-1">{formErrors.player1Name}</p>}
                 </div>
 
                 <div>
-                  <label className="block text-xs font-orbitron uppercase tracking-wider text-slate-300 mb-1.5">
+                  <label className="block text-xs font-orbitron uppercase tracking-wider text-slate-200 mb-1.5">
                     {bookingType === 'Squad' ? 'Player 1 (Leader) Free Fire UID' : 'Free Fire UID'} <span className="text-neonOrange">*</span>
                   </label>
                   <input
@@ -386,8 +411,8 @@ export default function BookingTerminal({ onBookingSuccess }) {
                     value={formData.player1Uid}
                     onChange={(e) => setFormData({ ...formData, player1Uid: e.target.value.replace(/\D/g, '') })}
                     placeholder="e.g. 3029117867 (8-12 digits)"
-                    className={`w-full px-4 py-3 rounded-xl bg-obsidian/80 border text-white text-xs font-mono outline-none transition-all ${
-                      formErrors.player1Uid ? 'border-cyberRed' : 'border-white/10 focus:border-neonOrange'
+                    className={`w-full px-4 py-3 rounded-xl bg-surface border text-white text-xs font-mono outline-none transition-all ${
+                      formErrors.player1Uid ? 'border-cyberRed' : 'border-white/15 focus:border-neonOrange'
                     }`}
                   />
                   {formErrors.player1Uid && <p className="text-[10px] text-cyberRed mt-1">{formErrors.player1Uid}</p>}
@@ -396,15 +421,15 @@ export default function BookingTerminal({ onBookingSuccess }) {
 
               {/* Squad Teammates UIDs (Player 2, 3, 4) */}
               {bookingType === 'Squad' && (
-                <div className="p-4 rounded-2xl bg-surfaceLight/50 border border-white/5 space-y-3">
+                <div className="p-4 rounded-2xl bg-surfaceLight/70 border border-white/10 space-y-3">
                   <div className="text-[11px] font-orbitron uppercase font-bold text-neonGold flex items-center gap-1.5">
                     <Users className="w-3.5 h-3.5" />
-                    <span>Squad Teammates Free Fire UIDs (Mandatory for Room ID Entry)</span>
+                    <span>Squad Teammates Free Fire UIDs (Required for Room Entry)</span>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div>
-                      <label className="block text-[10px] font-orbitron uppercase text-slate-400 mb-1">
+                      <label className="block text-[10px] font-orbitron uppercase text-slate-300 mb-1">
                         Player 2 FF UID <span className="text-neonOrange">*</span>
                       </label>
                       <input
@@ -413,14 +438,14 @@ export default function BookingTerminal({ onBookingSuccess }) {
                         value={formData.player2Uid}
                         onChange={(e) => setFormData({ ...formData, player2Uid: e.target.value.replace(/\D/g, '') })}
                         placeholder="8-12 digits"
-                        className={`w-full px-3 py-2.5 rounded-lg bg-obsidian border text-xs font-mono text-white outline-none ${
-                          formErrors.player2Uid ? 'border-cyberRed' : 'border-white/10 focus:border-neonOrange'
+                        className={`w-full px-3 py-2.5 rounded-lg bg-surface border text-xs font-mono text-white outline-none ${
+                          formErrors.player2Uid ? 'border-cyberRed' : 'border-white/15 focus:border-neonOrange'
                         }`}
                       />
                     </div>
 
                     <div>
-                      <label className="block text-[10px] font-orbitron uppercase text-slate-400 mb-1">
+                      <label className="block text-[10px] font-orbitron uppercase text-slate-300 mb-1">
                         Player 3 FF UID <span className="text-neonOrange">*</span>
                       </label>
                       <input
@@ -429,14 +454,14 @@ export default function BookingTerminal({ onBookingSuccess }) {
                         value={formData.player3Uid}
                         onChange={(e) => setFormData({ ...formData, player3Uid: e.target.value.replace(/\D/g, '') })}
                         placeholder="8-12 digits"
-                        className={`w-full px-3 py-2.5 rounded-lg bg-obsidian border text-xs font-mono text-white outline-none ${
-                          formErrors.player3Uid ? 'border-cyberRed' : 'border-white/10 focus:border-neonOrange'
+                        className={`w-full px-3 py-2.5 rounded-lg bg-surface border text-xs font-mono text-white outline-none ${
+                          formErrors.player3Uid ? 'border-cyberRed' : 'border-white/15 focus:border-neonOrange'
                         }`}
                       />
                     </div>
 
                     <div>
-                      <label className="block text-[10px] font-orbitron uppercase text-slate-400 mb-1">
+                      <label className="block text-[10px] font-orbitron uppercase text-slate-300 mb-1">
                         Player 4 FF UID <span className="text-neonOrange">*</span>
                       </label>
                       <input
@@ -445,8 +470,8 @@ export default function BookingTerminal({ onBookingSuccess }) {
                         value={formData.player4Uid}
                         onChange={(e) => setFormData({ ...formData, player4Uid: e.target.value.replace(/\D/g, '') })}
                         placeholder="8-12 digits"
-                        className={`w-full px-3 py-2.5 rounded-lg bg-obsidian border text-xs font-mono text-white outline-none ${
-                          formErrors.player4Uid ? 'border-cyberRed' : 'border-white/10 focus:border-neonOrange'
+                        className={`w-full px-3 py-2.5 rounded-lg bg-surface border text-xs font-mono text-white outline-none ${
+                          formErrors.player4Uid ? 'border-cyberRed' : 'border-white/15 focus:border-neonOrange'
                         }`}
                       />
                     </div>
@@ -457,7 +482,7 @@ export default function BookingTerminal({ onBookingSuccess }) {
               {/* Contact Information (WhatsApp & Email) */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-orbitron uppercase tracking-wider text-slate-300 mb-1.5">
+                  <label className="block text-xs font-orbitron uppercase tracking-wider text-slate-200 mb-1.5">
                     WhatsApp Number (For Room ID & Password) <span className="text-neonOrange">*</span>
                   </label>
                   <input
@@ -466,15 +491,15 @@ export default function BookingTerminal({ onBookingSuccess }) {
                     value={formData.whatsapp}
                     onChange={(e) => setFormData({ ...formData, whatsapp: e.target.value.replace(/\D/g, '') })}
                     placeholder="10-digit mobile number"
-                    className={`w-full px-4 py-3 rounded-xl bg-obsidian/80 border text-white text-xs font-mono outline-none ${
-                      formErrors.whatsapp ? 'border-cyberRed' : 'border-white/10 focus:border-neonOrange'
+                    className={`w-full px-4 py-3 rounded-xl bg-surface border text-white text-xs font-mono outline-none ${
+                      formErrors.whatsapp ? 'border-cyberRed' : 'border-white/15 focus:border-neonOrange'
                     }`}
                   />
                   {formErrors.whatsapp && <p className="text-[10px] text-cyberRed mt-1">{formErrors.whatsapp}</p>}
                 </div>
 
                 <div>
-                  <label className="block text-xs font-orbitron uppercase tracking-wider text-slate-300 mb-1.5">
+                  <label className="block text-xs font-orbitron uppercase tracking-wider text-slate-200 mb-1.5">
                     Email Address (For HTML Entry Ticket) <span className="text-neonOrange">*</span>
                   </label>
                   <input
@@ -482,8 +507,8 @@ export default function BookingTerminal({ onBookingSuccess }) {
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     placeholder="e.g. squadleader@gmail.com"
-                    className={`w-full px-4 py-3 rounded-xl bg-obsidian/80 border text-white text-xs outline-none ${
-                      formErrors.email ? 'border-cyberRed' : 'border-white/10 focus:border-neonOrange'
+                    className={`w-full px-4 py-3 rounded-xl bg-surface border text-white text-xs outline-none ${
+                      formErrors.email ? 'border-cyberRed' : 'border-white/15 focus:border-neonOrange'
                     }`}
                   />
                   {formErrors.email && <p className="text-[10px] text-cyberRed mt-1">{formErrors.email}</p>}
@@ -495,7 +520,7 @@ export default function BookingTerminal({ onBookingSuccess }) {
                 type="submit"
                 className="w-full py-4 rounded-xl bg-gradient-to-r from-neonOrange via-orange-500 to-neonGold hover:from-orange-500 hover:to-orange-600 text-white font-orbitron font-extrabold text-sm uppercase tracking-wider shadow-glow-orange hover:scale-[1.01] active:scale-[0.99] transition-all cursor-pointer flex items-center justify-center gap-2"
               >
-                <span>Proceed to UPI QR Payment (₹{amount})</span>
+                <span>Proceed to 1-Tap UPI Payment (₹{amount})</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
 
@@ -504,26 +529,77 @@ export default function BookingTerminal({ onBookingSuccess }) {
         )}
 
         {/* ========================================================= */}
-        {/* STEP 2: DYNAMIC UPI QR & 12-DIGIT UTR CROSS-CHECK */}
+        {/* STEP 2: 1-TAP MOBILE UPI REDIRECT + QR + 12-DIGIT UTR */}
         {/* ========================================================= */}
         {currentStep === 2 && (
           <div className="glass-panel-glow rounded-3xl p-6 sm:p-10 max-w-2xl mx-auto border border-neonOrange/30 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
             
             <div className="text-center mb-6">
               <span className="text-neonGold font-orbitron text-xs font-bold uppercase tracking-widest block">
-                STEP 2: SCAN & ENTER 12-DIGIT UTR
+                STEP 2: 1-TAP MOBILE PAY & ENTER 12-DIGIT UTR
               </span>
               <h3 className="font-orbitron font-black text-2xl text-white mt-1">
                 PAY ₹{amount} VIA OFFICIAL UPI
               </h3>
-              <p className="text-xs text-slate-400 mt-1">
-                Pay to verified organizer <strong className="text-white">Anirudh Singh</strong> ({officialUpi})
+              <p className="text-xs text-slate-300 mt-1">
+                Tap your preferred app below on mobile to auto-redirect with amount pre-filled!
               </p>
+            </div>
+
+            {/* 1-TAP MOBILE APP REDIRECT BUTTONS */}
+            <div className="mb-6 space-y-2.5">
+              <span className="text-[10px] font-orbitron uppercase text-neonCyan font-bold tracking-wider block text-center">
+                ⚡ 1-Tap Open UPI App (Mobile Instant Pay):
+              </span>
+              
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                
+                {/* PhonePe */}
+                <a
+                  href={phonePeLink}
+                  onClick={() => playClick()}
+                  className="py-3 px-2 rounded-xl bg-purple-600/20 hover:bg-purple-600/30 border border-purple-500/40 text-purple-200 hover:text-white font-orbitron text-xs font-bold flex flex-col items-center justify-center gap-1 transition-all active:scale-95 shadow-lg"
+                >
+                  <Smartphone className="w-4 h-4 text-purple-400" />
+                  <span>PhonePe</span>
+                </a>
+
+                {/* Google Pay */}
+                <a
+                  href={gPayLink}
+                  onClick={() => playClick()}
+                  className="py-3 px-2 rounded-xl bg-blue-600/20 hover:bg-blue-600/30 border border-blue-500/40 text-blue-200 hover:text-white font-orbitron text-xs font-bold flex flex-col items-center justify-center gap-1 transition-all active:scale-95 shadow-lg"
+                >
+                  <Smartphone className="w-4 h-4 text-blue-400" />
+                  <span>Google Pay</span>
+                </a>
+
+                {/* Paytm */}
+                <a
+                  href={paytmLink}
+                  onClick={() => playClick()}
+                  className="py-3 px-2 rounded-xl bg-cyan-600/20 hover:bg-cyan-600/30 border border-cyan-500/40 text-cyan-200 hover:text-white font-orbitron text-xs font-bold flex flex-col items-center justify-center gap-1 transition-all active:scale-95 shadow-lg"
+                >
+                  <Smartphone className="w-4 h-4 text-cyan-400" />
+                  <span>Paytm</span>
+                </a>
+
+                {/* Any UPI / BHIM */}
+                <a
+                  href={genericUpiLink}
+                  onClick={() => playClick()}
+                  className="py-3 px-2 rounded-xl bg-neonGreen/20 hover:bg-neonGreen/30 border border-neonGreen/40 text-neonGreen font-orbitron text-xs font-bold flex flex-col items-center justify-center gap-1 transition-all active:scale-95 shadow-lg"
+                >
+                  <CreditCard className="w-4 h-4 text-neonGreen" />
+                  <span>Any UPI App</span>
+                </a>
+
+              </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 items-center mb-6">
               
-              {/* Dynamic QR Code with Animated Cyber Scanner Beam */}
+              {/* Dynamic QR Code with Animated Scanner Beam */}
               <div className="flex flex-col items-center">
                 <div className="relative p-3 bg-white rounded-2xl shadow-2xl overflow-hidden group border border-neonGold/30">
                   <img
@@ -534,26 +610,16 @@ export default function BookingTerminal({ onBookingSuccess }) {
                   {/* Cyber Laser Scanner line */}
                   <div className="absolute left-0 right-0 h-1 bg-gradient-to-r from-transparent via-neonOrange to-transparent animate-scanline shadow-glow-orange pointer-events-none" />
                 </div>
-                <span className="text-[11px] text-slate-400 mt-2 font-mono flex items-center gap-1">
+                <span className="text-[11px] text-slate-300 mt-2 font-mono flex items-center gap-1">
                   <span className="w-1.5 h-1.5 rounded-full bg-neonGreen animate-ping" />
-                  PhonePe • Google Pay • Paytm • BHIM
+                  Or Scan with Scanner Camera
                 </span>
-
-                {/* 1-Tap Mobile UPI Intent */}
-                <a
-                  href={upiDeepLink}
-                  onClick={() => playClick()}
-                  className="sm:hidden mt-3 w-full py-2.5 px-4 rounded-xl bg-neonGreen/10 border border-neonGreen/40 text-neonGreen font-orbitron text-xs font-bold text-center flex items-center justify-center gap-2"
-                >
-                  <CreditCard className="w-4 h-4" />
-                  <span>📱 Open UPI App (Pay ₹{amount})</span>
-                </a>
               </div>
 
               {/* UPI Copy Details */}
               <div className="space-y-3 text-xs">
                 
-                <div className="bg-obsidian/80 rounded-xl p-3 border border-white/10 space-y-2">
+                <div className="bg-surface rounded-xl p-3.5 border border-white/10 space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="text-slate-400 font-orbitron">Amount:</span>
                     <span className="font-orbitron font-extrabold text-neonGold text-lg">₹{amount}.00</span>
@@ -584,8 +650,8 @@ export default function BookingTerminal({ onBookingSuccess }) {
                   </div>
                 </div>
 
-                <div className="p-2.5 rounded-lg bg-surfaceLight/80 border border-white/5 text-[11px] text-slate-300">
-                  💡 <strong className="text-white">Where is UTR?</strong> After paying on PhonePe/GPay/Paytm, open the transaction receipt and copy the <strong>12-digit UPI Ref No / UTR</strong>.
+                <div className="p-3 rounded-lg bg-surfaceLight border border-white/10 text-[11px] text-slate-300 leading-relaxed">
+                  💡 <strong className="text-white">Next Step:</strong> After paying, open the transaction details in your app, copy the <strong>12-digit UPI UTR / Ref No.</strong>, and paste it below.
                 </div>
 
               </div>
@@ -600,23 +666,35 @@ export default function BookingTerminal({ onBookingSuccess }) {
               </div>
             )}
 
-            {/* MANDATORY 12-DIGIT UTR INPUT FORM */}
+            {/* MANDATORY 12-DIGIT UTR INPUT WITH 1-TAP PASTE */}
             <form onSubmit={handleVerifyAndBook} className="space-y-4 pt-2 border-t border-white/10">
               <div>
                 <label className="block text-xs font-orbitron uppercase tracking-wider text-neonGreen font-bold mb-1.5 flex items-center justify-between">
                   <span>Enter 12-Digit UPI UTR / Reference No. <span className="text-cyberRed">*</span></span>
-                  <span className="text-[10px] text-slate-400 font-mono">Strict 12 Digits</span>
+                  <span className="text-[10px] text-slate-400 font-mono">12 Numeric Digits</span>
                 </label>
-                <div className="relative">
-                  <Hash className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-neonGreen" />
+                
+                <div className="relative flex items-center">
+                  <Hash className="absolute left-3.5 w-4 h-4 text-neonGreen" />
                   <input
                     type="text"
                     maxLength={12}
                     value={formData.utrNumber}
                     onChange={(e) => setFormData({ ...formData, utrNumber: e.target.value.replace(/\D/g, '') })}
-                    placeholder="e.g. 432819284719 (12-digit numeric)"
-                    className="w-full pl-10 pr-4 py-3 rounded-xl bg-obsidian border border-neonGreen/40 focus:border-neonGreen focus:ring-1 focus:ring-neonGreen text-white font-mono text-sm tracking-widest outline-none"
+                    placeholder="e.g. 432819284719"
+                    className="w-full pl-10 pr-28 py-3 rounded-xl bg-surface border border-neonGreen/50 focus:border-neonGreen focus:ring-1 focus:ring-neonGreen text-white font-mono text-sm tracking-widest outline-none"
                   />
+                  
+                  {/* 1-Tap Paste Button */}
+                  <button
+                    type="button"
+                    onClick={handlePasteUtr}
+                    className="absolute right-2 px-3 py-1.5 rounded-lg bg-surfaceLight hover:bg-neonGreen/20 text-slate-200 hover:text-neonGreen text-xs font-orbitron font-semibold flex items-center gap-1 border border-white/10 transition-colors cursor-pointer"
+                    title="Paste from clipboard"
+                  >
+                    <ClipboardPaste className="w-3.5 h-3.5" />
+                    <span>Paste</span>
+                  </button>
                 </div>
               </div>
 
@@ -637,7 +715,7 @@ export default function BookingTerminal({ onBookingSuccess }) {
                   {submitting ? (
                     <>
                       <RefreshCw className="w-4 h-4 animate-spin" />
-                      <span>Cross-Checking UTR in Sheet...</span>
+                      <span>Verifying UTR in Sheet...</span>
                     </>
                   ) : (
                     <>
@@ -659,7 +737,6 @@ export default function BookingTerminal({ onBookingSuccess }) {
         {currentStep === 3 && confirmedBooking && (
           <div className="glass-panel-glow rounded-3xl p-6 sm:p-10 max-w-2xl mx-auto border-2 border-neonGreen/60 shadow-glow-green/40 animate-in fade-in zoom-in-95 duration-200 relative overflow-hidden">
             
-            {/* Top Glowing Ribbon */}
             <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-neonGreen via-neonCyan to-neonGold" />
 
             <div className="text-center pb-6 border-b border-white/10">
@@ -677,7 +754,6 @@ export default function BookingTerminal({ onBookingSuccess }) {
               </p>
             </div>
 
-            {/* Pass Body Details */}
             <div className="py-6 space-y-4">
               
               <div className="bg-gradient-to-r from-neonOrange/20 to-neonGold/20 border border-neonGold/40 rounded-2xl p-4 text-center">
@@ -693,33 +769,33 @@ export default function BookingTerminal({ onBookingSuccess }) {
               </div>
 
               <div className="grid grid-cols-2 gap-3 text-xs font-poppins">
-                <div className="bg-obsidian/80 rounded-xl p-3 border border-white/10">
+                <div className="bg-surface rounded-xl p-3 border border-white/10">
                   <span className="text-slate-400 text-[10px] uppercase font-orbitron block">Match Date</span>
                   <span className="font-bold text-white text-xs">Sun, 29 Nov 2026</span>
                 </div>
 
-                <div className="bg-obsidian/80 rounded-xl p-3 border border-white/10">
+                <div className="bg-surface rounded-xl p-3 border border-white/10">
                   <span className="text-slate-400 text-[10px] uppercase font-orbitron block">Battleground</span>
                   <span className="font-bold text-neonCyan text-xs font-orbitron">Bermuda Only</span>
                 </div>
 
-                <div className="bg-obsidian/80 rounded-xl p-3 border border-white/10">
+                <div className="bg-surface rounded-xl p-3 border border-white/10">
                   <span className="text-slate-400 text-[10px] uppercase font-orbitron block">Order ID</span>
                   <span className="font-mono font-bold text-white text-xs">{confirmedBooking.orderId}</span>
                 </div>
 
-                <div className="bg-obsidian/80 rounded-xl p-3 border border-white/10">
+                <div className="bg-surface rounded-xl p-3 border border-white/10">
                   <span className="text-slate-400 text-[10px] uppercase font-orbitron block">Verified UTR</span>
                   <span className="font-mono font-bold text-neonGreen text-xs">{confirmedBooking.utr}</span>
                 </div>
               </div>
 
               {/* Registered UIDs Box */}
-              <div className="p-3.5 rounded-xl bg-surfaceLight/80 border border-white/5 space-y-1.5 text-xs">
+              <div className="p-3.5 rounded-xl bg-surfaceLight border border-white/10 space-y-1.5 text-xs">
                 <div className="text-[11px] font-orbitron uppercase text-neonGold font-bold">
                   Registered Squad UIDs:
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-1 text-[11px] font-mono text-slate-300">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-1 text-[11px] font-mono text-slate-200">
                   <div>• {confirmedBooking.player1}</div>
                   {confirmedBooking.player2 && <div>• UID: {confirmedBooking.player2}</div>}
                   {confirmedBooking.player3 && <div>• UID: {confirmedBooking.player3}</div>}
@@ -728,12 +804,12 @@ export default function BookingTerminal({ onBookingSuccess }) {
               </div>
 
               {/* Match Briefing Reminder */}
-              <div className="p-3.5 rounded-xl bg-neonGreen/5 border border-neonGreen/20 text-xs text-slate-300 space-y-1">
+              <div className="p-3.5 rounded-xl bg-neonGreen/10 border border-neonGreen/30 text-xs text-slate-300 space-y-1">
                 <div className="flex items-center gap-1.5 text-neonGreen font-orbitron font-bold text-[11px]">
                   <ShieldCheck className="w-4 h-4" />
                   <span>Room Credentials Protocol:</span>
                 </div>
-                <p className="text-[11px] text-slate-400 leading-relaxed">
+                <p className="text-[11px] text-slate-300 leading-relaxed">
                   Room ID & Password will be delivered via WhatsApp to <strong className="text-white">{confirmedBooking.mobile}</strong> 15 minutes before match kickoff. Confirmation receipt has been dispatched to <strong className="text-white">{confirmedBooking.email}</strong>.
                 </p>
               </div>

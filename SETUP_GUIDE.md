@@ -13,7 +13,7 @@ Comprehensive guide to deploying and managing the **RJ05 Esports — Season 1 To
 - **Total Capacity:** Strictly 12 Squads = 48 Players Maximum (Single Match)
 - **Official UPI ID:** `8209071700@ptsbi`
 - **Organizer:** Anirudh Singh
-  - **In-Game IGN:** `ANIRUDH•RJ05` | **Level:** 61 | **Guild:** `CEXPRIMER'S` | **FF UID:** `3029117867`
+  - **In-Game IGN:** `ANIRUDH•RJ05` | **Level:** 61 | **Guild:** `ACE PRIMERS` | **FF UID:** `3029117867`
   - **WhatsApp / Phone:** `+91 8209071700`
   - **Email:** `anirudhgunesh5@gmail.com`
   - **Instagram:** `@i.e_anirudh_rj05` ([https://instagram.com/i.e_anirudh_rj05](https://instagram.com/i.e_anirudh_rj05))
